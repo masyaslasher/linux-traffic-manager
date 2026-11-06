@@ -18,7 +18,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 [![Fedora](https://img.shields.io/badge/Fedora-40%20%7C%2041%20%7C%2042%20%7C%2044-blue.svg)](https://fedoraproject.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange.svg)](https://www.rust-lang.org/)
-[![Languages: 10](https://img.shields.io/badge/Languages-10%20Supported-brightgreen.svg)](#-поддерживаемые-языки-и-наречия--supported-languages--dialects)
+[![Languages: 11](https://img.shields.io/badge/Languages-11%20Supported-brightgreen.svg)](#-поддерживаемые-языки-и-наречия--supported-languages--dialects)
 [![GitHub Release](https://img.shields.io/github/v/release/masyaslasher/linux-traffic-manager?color=orange)](https://github.com/masyaslasher/linux-traffic-manager/releases)
 
 </div>
@@ -33,9 +33,9 @@
 - **🛒 Built-in Extension Store:** 
   - **10 Instant Themes:** Warm Orange, Cyberpunk Neon, Nordic Frost, Dracula Gothic, Emerald Matrix, Tokyo Nightfall, Solarized Teal, Crimson Velvet, Retro Synthwave 80s, Monokai Pro Studio, Paper Minimal Ivory. Instant 1-click toggle with zero downloads required!
   - **5 Functional Extensions:** GeoIP & Country Flags Inspector, Tracker & Telemetry Shield (DNS Guard), Data Quota & Tethering Guard, Deep Whois & Reverse ASN Probe, Network Speedtest Mini.
-- **🌐 10 Reactive Languages (Instant Switching):**
+- **🌐 11 Reactive Languages (Instant Switching Without Reload):**
   - Русский (Russian)
-  - English
+  - English (US)
   - Deutsch (German)
   - Українська (Ukrainian)
   - Дореформенный Русскій (Pre-reform Russian with ѣ, ъ, ѳ, і)
@@ -64,11 +64,12 @@
 
 LTM оснащён полностью реактивным движком интернационализации (i18n): **смена языка происходит мгновенно в 1 клик прямо в селекторе шапки приложения без перезагрузки интерфейса или потери данных**.
 
-Поддерживаются **10 полноценных языков, диалектов и исторических наречий**:
+Поддерживаются **11 полноценных языков, диалектов и исторических наречий**:
 
 | Флаг / Иконка | Язык / Наречие | Оригинальное название (Native Name) | Код | Описание и стилистика перевода |
 |:---:|---|---|:---:|---|
 | 🇷🇺 | **Русский** | Русский | `ru` | Современный литературный русский язык со всей технической сетевой терминологией. |
+| 🇺🇸 | **English** | English (US) | `en` | Standard international English (*Network Dashboard, Process Monitor, Bandwidth Manager*). |
 | 🇩🇪 | **Немецкий** | Deutsch | `de` | Точная немецкая инженерная терминология (*Netzwerkverkehr, Verbindungen, Überwachung*). |
 | 🇺🇦 | **Украинский** | Українська | `uk` | Повна українська локалізація (*Мережева активність, Активні з'єднання, Інтерфейси*). |
 | 📜 | **Дореформенный русский** | Дореформенный русскій | `ru_pre` | Дореволюционная орфография Российской Империи с ятями (ѣ), ерами (ъ), ижицей и фитой (*Панель мониторинга, Соединенія, Скорость передачи*). |
