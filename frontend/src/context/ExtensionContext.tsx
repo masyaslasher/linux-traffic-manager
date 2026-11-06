@@ -24,7 +24,13 @@ const STORAGE_QUOTA = 'ltm_quota_settings';
 
 export const ExtensionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeThemeId, setActiveThemeId] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_ACTIVE_THEME) || 'orange-default';
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTheme = params.get('theme');
+      if (urlTheme) return urlTheme;
+      return localStorage.getItem(STORAGE_ACTIVE_THEME) || 'orange-default';
+    }
+    return 'orange-default';
   });
 
   const [enabledExtensions, setEnabledExtensions] = useState<Record<string, boolean>>(() => {

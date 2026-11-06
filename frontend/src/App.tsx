@@ -33,7 +33,57 @@ import {
 
 export const App: React.FC = () => {
   const { t } = useI18n();
-  const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
+  const [currentTab, setCurrentTab] = useState<NavigationTab>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '') as NavigationTab;
+      const validTabs: NavigationTab[] = [
+        'dashboard',
+        'applications',
+        'connections',
+        'interfaces',
+        'analytics',
+        'diagnostics',
+        'automation',
+        'bandwidth',
+        'history',
+        'settings',
+        'store',
+      ];
+      if (validTabs.includes(hash)) return hash;
+    }
+    return 'dashboard';
+  });
+
+  const handleSelectTab = (tab: NavigationTab) => {
+    setCurrentTab(tab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = tab;
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as NavigationTab;
+      const validTabs: NavigationTab[] = [
+        'dashboard',
+        'applications',
+        'connections',
+        'interfaces',
+        'analytics',
+        'diagnostics',
+        'automation',
+        'bandwidth',
+        'history',
+        'settings',
+        'store',
+      ];
+      if (validTabs.includes(hash)) {
+        setCurrentTab(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
   const [speedMetrics, setSpeedMetrics] = useState<SpeedMetrics | null>(null);
@@ -397,7 +447,7 @@ export const App: React.FC = () => {
     <>
       <Layout
         currentTab={currentTab}
-        onSelectTab={setCurrentTab}
+        onSelectTab={handleSelectTab}
         activeInterface={activeInterface}
         speedMetrics={speedMetrics}
         title={title}
@@ -409,7 +459,7 @@ export const App: React.FC = () => {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         activeProfileName={activeProfile}
         alertCount={unacknowledgedAlerts}
-        onOpenAlerts={() => setCurrentTab('automation')}
+        onOpenAlerts={() => handleSelectTab('automation')}
       >
         {currentTab === 'dashboard' && (
           <DashboardPage
@@ -506,7 +556,7 @@ export const App: React.FC = () => {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onSelectTab={setCurrentTab}
+        onSelectTab={handleSelectTab}
         onRunDiagnostics={handleRunDiagnostics}
         onExportCsv={handleExportCsv}
       />

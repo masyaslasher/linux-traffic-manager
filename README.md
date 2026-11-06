@@ -21,6 +21,10 @@
 [![Languages: 11](https://img.shields.io/badge/Languages-11%20Supported-brightgreen.svg)](#-поддерживаемые-языки-и-наречия--supported-languages--dialects)
 [![GitHub Release](https://img.shields.io/github/v/release/masyaslasher/linux-traffic-manager?color=orange)](https://github.com/masyaslasher/linux-traffic-manager/releases)
 
+<br/>
+
+![Linux Traffic Manager Dashboard Hero](docs/screenshots/dashboard.png)
+
 </div>
 
 ---
@@ -57,6 +61,41 @@
   7. **Diagnostics:** Automated DNS resolution, gateway reachability, ping latency, port reachability, and hop traceroute probes.
   8. **Store:** Built-in marketplace for 1-click theme switching and utility modules.
   9. **History & Analytics:** Historical traffic analytics backed by local SQLite storage with multi-series charts and CSV/JSON export.
+
+---
+
+## 📸 Галерея интерфейса / Screenshots & UI Showcase
+
+<div align="center">
+
+### 🛒 Встроенный магазин тем и расширений (Extension Store)
+![Extension Store](docs/screenshots/store.png)
+
+<br/>
+
+### 🎨 Мгновенные темы оформления (Cyberpunk Neon & Emerald Matrix)
+<p align="center">
+  <img src="docs/screenshots/cyberpunk-theme.png" width="49%" alt="Cyberpunk Neon Theme" />
+  <img src="docs/screenshots/matrix-theme.png" width="49%" alt="Emerald Matrix Theme" />
+</p>
+
+<br/>
+
+### 🔍 Монитор процессов и Инспектор соединений
+<p align="center">
+  <img src="docs/screenshots/applications.png" width="49%" alt="Process Monitor" />
+  <img src="docs/screenshots/connections.png" width="49%" alt="Connection Inspector" />
+</p>
+
+<br/>
+
+### 🛠️ Сетевая диагностика и Центр автоматизации
+<p align="center">
+  <img src="docs/screenshots/diagnostics.png" width="49%" alt="Diagnostics Suite" />
+  <img src="docs/screenshots/automation.png" width="49%" alt="Automation Rules" />
+</p>
+
+</div>
 
 ---
 
