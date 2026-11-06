@@ -118,6 +118,7 @@ pub fn parse_proc_net_sockets(
             local_port,
             remote_address,
             remote_port,
+            remote_hostname: None,
             state,
             inode,
             uid,

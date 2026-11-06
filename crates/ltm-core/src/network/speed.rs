@@ -28,16 +28,48 @@ pub fn format_speed(bps: f64) -> String {
     format!("{}/s", format_bytes(bps))
 }
 
+/// Formats a raw bit count (or bits/sec) into human-readable bit, Kbit, Mbit, Gbit representation
+pub fn format_bits(bits: f64) -> String {
+    const KBIT: f64 = 1000.0;
+    const MBIT: f64 = KBIT * 1000.0;
+    const GBIT: f64 = MBIT * 1000.0;
+    const TBIT: f64 = GBIT * 1000.0;
+
+    if bits < KBIT {
+        format!("{:.0} bit", bits)
+    } else if bits < MBIT {
+        format!("{:.1} Kbit", bits / KBIT)
+    } else if bits < GBIT {
+        format!("{:.2} Mbit", bits / MBIT)
+    } else if bits < TBIT {
+        format!("{:.2} Gbit", bits / GBIT)
+    } else {
+        format!("{:.2} Tbit", bits / TBIT)
+    }
+}
+
+/// Formats speed into human-readable bit/s, Kbit/s, Mbit/s, Gbit/s
+pub fn format_speed_bits(bytes_per_sec: f64) -> String {
+    let bits_per_sec = bytes_per_sec * 8.0;
+    format!("{}/s", format_bits(bits_per_sec))
+}
+
 /// State tracking for previous interface sample
 #[derive(Debug, Clone)]
 struct SampleRecord {
     timestamp: Instant,
     rx_bytes: u64,
     tx_bytes: u64,
+    peak_rx_speed_bps: f64,
+    peak_tx_speed_bps: f64,
+    sum_rx_speed_bps: f64,
+    sum_tx_speed_bps: f64,
+    sample_count: u64,
+    first_seen: Instant,
 }
 
 /// SpeedCalculator manages rate estimation across arbitrary sampling periods,
-/// handling counter resets, wraps, and interval normalization.
+/// handling counter resets, wraps, rolling peak/average metrics, and interval normalization.
 #[derive(Debug, Default)]
 pub struct SpeedCalculator {
     previous_samples: HashMap<String, SampleRecord>,
@@ -88,6 +120,20 @@ impl SpeedCalculator {
             let rx_speed_bps = (rx_delta as f64) / elapsed_secs;
             let tx_speed_bps = (tx_delta as f64) / elapsed_secs;
 
+            // Rolling stats
+            prev.peak_rx_speed_bps = prev.peak_rx_speed_bps.max(rx_speed_bps);
+            prev.peak_tx_speed_bps = prev.peak_tx_speed_bps.max(tx_speed_bps);
+            prev.sum_rx_speed_bps += rx_speed_bps;
+            prev.sum_tx_speed_bps += tx_speed_bps;
+            prev.sample_count += 1;
+
+            let avg_rx_speed_bps = prev.sum_rx_speed_bps / (prev.sample_count as f64);
+            let avg_tx_speed_bps = prev.sum_tx_speed_bps / (prev.sample_count as f64);
+            let uptime_secs = now.duration_since(prev.first_seen).as_secs();
+
+            let peak_rx = prev.peak_rx_speed_bps;
+            let peak_tx = prev.peak_tx_speed_bps;
+
             // Update stored sample
             prev.timestamp = now;
             prev.rx_bytes = counters.rx_bytes;
@@ -98,10 +144,25 @@ impl SpeedCalculator {
                 tx_speed_bps,
                 rx_speed_human: format_speed(rx_speed_bps),
                 tx_speed_human: format_speed(tx_speed_bps),
+                rx_speed_bits_human: format_speed_bits(rx_speed_bps),
+                tx_speed_bits_human: format_speed_bits(tx_speed_bps),
                 rx_bytes_total: counters.rx_bytes,
                 tx_bytes_total: counters.tx_bytes,
                 rx_total_human: format_bytes(counters.rx_bytes as f64),
                 tx_total_human: format_bytes(counters.tx_bytes as f64),
+                peak_rx_speed_bps: peak_rx,
+                peak_tx_speed_bps: peak_tx,
+                peak_rx_speed_human: format_speed(peak_rx),
+                peak_tx_speed_human: format_speed(peak_tx),
+                avg_rx_speed_bps,
+                avg_tx_speed_bps,
+                avg_rx_speed_human: format_speed(avg_rx_speed_bps),
+                avg_tx_speed_human: format_speed(avg_tx_speed_bps),
+                active_connections: 0,
+                tcp_connections: 0,
+                udp_connections: 0,
+                connection_uptime_secs: uptime_secs,
+                bandwidth_utilization_percent: None,
             })
         } else {
             // First observation: store baseline sample
@@ -111,6 +172,12 @@ impl SpeedCalculator {
                     timestamp: now,
                     rx_bytes: counters.rx_bytes,
                     tx_bytes: counters.tx_bytes,
+                    peak_rx_speed_bps: 0.0,
+                    peak_tx_speed_bps: 0.0,
+                    sum_rx_speed_bps: 0.0,
+                    sum_tx_speed_bps: 0.0,
+                    sample_count: 0,
+                    first_seen: now,
                 },
             );
             None

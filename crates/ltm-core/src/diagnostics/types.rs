@@ -29,6 +29,23 @@ pub struct GatewayInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TcpPortCheckResult {
+    pub target: String,
+    pub port: u16,
+    pub is_open: bool,
+    pub latency_ms: Option<f64>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RouteHop {
+    pub hop: u8,
+    pub ip: Option<String>,
+    pub rtt_ms: Option<f64>,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiagnosticReport {
     pub timestamp: i64,
     pub network_status: String, // "Connected", "Degraded", "Offline"
@@ -39,4 +56,10 @@ pub struct DiagnosticReport {
     pub packet_loss_percent: f64,
     pub dns_checks: Vec<DnsCheckResult>,
     pub probes: Vec<TargetProbeResult>,
+    #[serde(default)]
+    pub summary: String,
+    #[serde(default)]
+    pub issues_found: Vec<String>,
+    #[serde(default)]
+    pub recommendations: Vec<String>,
 }

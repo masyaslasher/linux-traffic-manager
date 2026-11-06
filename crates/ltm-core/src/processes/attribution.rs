@@ -20,6 +20,10 @@ pub fn get_process_attribution_snapshot(now: i64) -> ProcessAttributionSnapshot 
     let mut app_map: HashMap<u32, ProcessAppSummary> = HashMap::new();
 
     for conn in &mut raw_connections {
+        if conn.remote_address == "127.0.0.1" || conn.remote_address == "::1" {
+            conn.remote_hostname = Some("localhost".to_string());
+        }
+
         if let Some(proc_meta) = inode_to_proc.get(&conn.inode) {
             conn.pid = Some(proc_meta.pid);
             conn.process_name = Some(proc_meta.name.clone());
@@ -35,12 +39,20 @@ pub fn get_process_attribution_snapshot(now: i64) -> ProcessAttributionSnapshot 
                 udp_count: 0,
                 attribution_status: ByteAttributionStatus::ConnectionBasedOnly,
                 attribution_notice: "Socket-level discovery. Accurate per-process byte accounting requires eBPF kernel tracing.".to_string(),
+                remote_endpoints: Vec::new(),
             });
 
             entry.connection_count += 1;
             match conn.protocol {
                 Protocol::Tcp => entry.tcp_count += 1,
                 Protocol::Udp => entry.udp_count += 1,
+            }
+
+            if !conn.remote_address.is_empty() && conn.remote_address != "0.0.0.0" && conn.remote_address != "::" {
+                let ep = format!("{}:{}", conn.remote_address, conn.remote_port);
+                if !entry.remote_endpoints.contains(&ep) && entry.remote_endpoints.len() < 8 {
+                    entry.remote_endpoints.push(ep);
+                }
             }
         }
     }

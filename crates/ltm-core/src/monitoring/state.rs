@@ -79,7 +79,33 @@ impl MonitorState {
                 tx_drop: iface.tx_dropped,
             };
 
-            if let Some(metrics) = self.speed_calc.update(&iface.name, counters, now) {
+            if let Some(mut metrics) = self.speed_calc.update(&iface.name, counters, now) {
+                // Socket counts from procfs
+                let (tcp_cnt, udp_cnt) = {
+                    let tcp4 = std::fs::read_to_string("/proc/net/tcp").map(|s| s.lines().count().saturating_sub(1)).unwrap_or(0);
+                    let tcp6 = std::fs::read_to_string("/proc/net/tcp6").map(|s| s.lines().count().saturating_sub(1)).unwrap_or(0);
+                    let udp4 = std::fs::read_to_string("/proc/net/udp").map(|s| s.lines().count().saturating_sub(1)).unwrap_or(0);
+                    let udp6 = std::fs::read_to_string("/proc/net/udp6").map(|s| s.lines().count().saturating_sub(1)).unwrap_or(0);
+                    (tcp4 + tcp6, udp4 + udp6)
+                };
+
+                metrics.tcp_connections = tcp_cnt;
+                metrics.udp_connections = udp_cnt;
+                metrics.active_connections = tcp_cnt + udp_cnt;
+
+                // Bandwidth utilization if interface link speed is known
+                metrics.bandwidth_utilization_percent = if let Some(spd) = iface.speed_mbps {
+                    if spd > 0 {
+                        let total_bits_sec = (metrics.rx_speed_bps + metrics.tx_speed_bps) * 8.0;
+                        let cap_bits_sec = (spd as f64) * 1_000_000.0;
+                        Some(((total_bits_sec / cap_bits_sec) * 100.0).clamp(0.0, 100.0))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
                 // Push to in-memory bounded ring buffer
                 let point = TrafficHistoryPoint {
                     timestamp: now_ts,
@@ -97,12 +123,86 @@ impl MonitorState {
                 self.latest_metrics = Some(metrics.clone());
                 self.tick_counter += 1;
 
-                // Batch flush to SQLite
-                if self
-                    .tick_counter
-                    .is_multiple_of(self.config.db_flush_interval_ticks)
-                {
-                    if let Some(ref db) = self.db {
+                // Evaluate automation rules and batch flush to SQLite
+                if let Some(ref db) = self.db {
+                    // Check rules every few seconds
+                    if self.tick_counter.is_multiple_of(3) {
+                        if let Ok(rules) = db.get_automation_rules() {
+                            for mut rule in rules {
+                                if !rule.enabled {
+                                    continue;
+                                }
+                                let is_cooled_down = (now_ts - rule.last_triggered_ts) >= (rule.cooldown_secs as i64);
+                                if !is_cooled_down {
+                                    continue;
+                                }
+
+                                let mut should_trigger = false;
+                                let mut alert_msg = String::new();
+
+                                match rule.trigger_type.as_str() {
+                                    "download_above" => {
+                                        let threshold: f64 = serde_json::from_str::<serde_json::Value>(&rule.condition_json)
+                                            .ok()
+                                            .and_then(|v| v.get("threshold_bps").and_then(|t| t.as_f64()))
+                                            .unwrap_or(52_428_800.0);
+                                        if metrics.rx_speed_bps > threshold {
+                                            should_trigger = true;
+                                            alert_msg = format!("Download rate reached {} (threshold: {})", metrics.rx_speed_human, crate::network::speed::format_speed(threshold));
+                                        }
+                                    }
+                                    "upload_above" => {
+                                        let threshold: f64 = serde_json::from_str::<serde_json::Value>(&rule.condition_json)
+                                            .ok()
+                                            .and_then(|v| v.get("threshold_bps").and_then(|t| t.as_f64()))
+                                            .unwrap_or(20_971_520.0);
+                                        if metrics.tx_speed_bps > threshold {
+                                            should_trigger = true;
+                                            alert_msg = format!("Upload rate reached {} (threshold: {})", metrics.tx_speed_human, crate::network::speed::format_speed(threshold));
+                                        }
+                                    }
+                                    "total_traffic_above" => {
+                                        let threshold: u64 = serde_json::from_str::<serde_json::Value>(&rule.condition_json)
+                                            .ok()
+                                            .and_then(|v| v.get("threshold_bytes").and_then(|t| t.as_u64()))
+                                            .unwrap_or(10_737_418_240);
+                                        let total = metrics.rx_bytes_total + metrics.tx_bytes_total;
+                                        if total > threshold {
+                                            should_trigger = true;
+                                            alert_msg = format!("Total interface data reached {} (limit: {})", crate::network::speed::format_bytes(total as f64), crate::network::speed::format_bytes(threshold as f64));
+                                        }
+                                    }
+                                    "connection_lost" => {
+                                        if !iface.is_up {
+                                            should_trigger = true;
+                                            alert_msg = format!("Network interface {} went DOWN", iface.name);
+                                        }
+                                    }
+                                    _ => {}
+                                }
+
+                                if should_trigger {
+                                    let alert = crate::storage::models::StoredAlertEvent {
+                                        id: None,
+                                        timestamp: now_ts,
+                                        rule_id: Some(rule.id.clone()),
+                                        severity: "warning".to_string(),
+                                        title: rule.name.clone(),
+                                        message: alert_msg,
+                                        acknowledged: false,
+                                    };
+                                    let _ = db.record_alert_event(&alert);
+
+                                    rule.last_triggered_ts = now_ts;
+                                    rule.trigger_count += 1;
+                                    let _ = db.save_automation_rule(&rule);
+                                }
+                            }
+                        }
+                    }
+
+                    // Flush sample periodically
+                    if self.tick_counter.is_multiple_of(self.config.db_flush_interval_ticks) {
                         let sample = StoredTrafficSample {
                             id: None,
                             timestamp: now_ts,

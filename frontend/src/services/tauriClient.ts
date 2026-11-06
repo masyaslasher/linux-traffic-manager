@@ -4,14 +4,21 @@ import {
   NetworkInterface,
   PermissionReport,
   ProcessAppSummary,
+  RouteHop,
   SpeedMetrics,
+  StoredAlertEvent,
+  StoredAutomationRule,
   StoredDiagnosticReport,
   StoredTrafficSample,
+  StoredUserProfile,
+  TcpPortCheckResult,
   TrafficHistoryPoint,
 } from '../types';
 
 import {
+  mockAlertEvents,
   mockApplications,
+  mockAutomationRules,
   mockConnections,
   mockDiagnosticHistory,
   mockDiagnosticReport,
@@ -19,6 +26,7 @@ import {
   mockInterfaces,
   mockPermissionReport,
   mockSpeedMetrics,
+  mockUserProfiles,
   generateMockHistoryPoints,
 } from './mockData';
 
@@ -125,5 +133,80 @@ export const api = {
 
   getDbStats: async (): Promise<number> => {
     return safeInvoke('get_db_stats', undefined, 1048576);
+  },
+
+  getAutomationRules: async (): Promise<StoredAutomationRule[]> => {
+    return safeInvoke('get_automation_rules', undefined, mockAutomationRules);
+  },
+
+  saveAutomationRule: async (rule: StoredAutomationRule): Promise<void> => {
+    return safeInvoke('save_automation_rule', { rule }, undefined);
+  },
+
+  deleteAutomationRule: async (ruleId: string): Promise<boolean> => {
+    return safeInvoke('delete_automation_rule', { ruleId }, true);
+  },
+
+  toggleAutomationRule: async (ruleId: string, enabled: boolean): Promise<void> => {
+    return safeInvoke('toggle_automation_rule', { ruleId, enabled }, undefined);
+  },
+
+  getAlertEvents: async (limit?: number): Promise<StoredAlertEvent[]> => {
+    return safeInvoke('get_alert_events', { limit }, mockAlertEvents);
+  },
+
+  acknowledgeAlert: async (alertId: number): Promise<void> => {
+    return safeInvoke('acknowledge_alert', { alertId }, undefined);
+  },
+
+  clearAlertEvents: async (): Promise<number> => {
+    return safeInvoke('clear_alert_events', undefined, 0);
+  },
+
+  getUserProfiles: async (): Promise<StoredUserProfile[]> => {
+    return safeInvoke('get_user_profiles', undefined, mockUserProfiles);
+  },
+
+  setActiveProfile: async (profileId: string): Promise<void> => {
+    return safeInvoke('set_active_profile', { profileId }, undefined);
+  },
+
+  getSetting: async (key: string): Promise<string | null> => {
+    return safeInvoke('get_setting', { key }, null);
+  },
+
+  setSetting: async (key: string, valueJson: string): Promise<void> => {
+    return safeInvoke('set_setting', { key, valueJson }, undefined);
+  },
+
+  exportHistoryCsv: async (startTs: number, endTs: number): Promise<string> => {
+    return safeInvoke(
+      'export_history_csv',
+      { startTs, endTs },
+      'timestamp,interface,rx_bps,tx_bps\n'
+    );
+  },
+
+  exportHistoryJson: async (startTs: number, endTs: number): Promise<string> => {
+    return safeInvoke('export_history_json', { startTs, endTs }, '[]');
+  },
+
+  checkTcpPort: async (
+    target: string,
+    port: number,
+    timeoutMs?: number
+  ): Promise<TcpPortCheckResult> => {
+    return safeInvoke(
+      'check_tcp_port',
+      { target, port, timeoutMs },
+      { target, port, is_open: true, latency_ms: 18.5, error: null }
+    );
+  },
+
+  probeRouteHops: async (target: string, maxHops?: number): Promise<RouteHop[]> => {
+    return safeInvoke('probe_route_hops', { target, maxHops }, [
+      { hop: 1, ip: '192.168.0.1', rtt_ms: 1.2, status: 'Local Gateway' },
+      { hop: 2, ip: '1.1.1.1', rtt_ms: 22.4, status: `Target Host (${target})` },
+    ]);
   },
 };

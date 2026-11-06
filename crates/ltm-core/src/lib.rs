@@ -12,13 +12,15 @@ pub mod processes;
 pub mod storage;
 
 pub use diagnostics::{
-    check_domain_dns, check_gateway_reachability, discover_default_gateway, probe_target_latency,
-    run_network_diagnostics, DiagnosticReport, DnsCheckResult, GatewayInfo, TargetProbeResult,
+    check_domain_dns, check_gateway_reachability, check_tcp_port, discover_default_gateway,
+    probe_route_hops, probe_target_latency, run_network_diagnostics, DiagnosticReport,
+    DnsCheckResult, GatewayInfo, RouteHop, TargetProbeResult, TcpPortCheckResult,
 };
 
 pub use network::{
-    discover_interfaces, format_bytes, format_speed, InterfaceState, NetworkInterface,
-    RawDevCounters, SpeedCalculator, SpeedMetrics, TrafficHistoryPoint,
+    discover_interfaces, format_bytes, format_bits, format_speed, format_speed_bits,
+    InterfaceState, NetworkInterface, RawDevCounters, SpeedCalculator, SpeedMetrics,
+    TrafficHistoryPoint,
 };
 
 pub use permissions::{inspect_permissions, PermissionReport};
@@ -30,4 +32,7 @@ pub use processes::{
     ProcessMetadata, Protocol, SocketState,
 };
 
-pub use storage::{DatabaseManager, StoredDiagnosticReport, StoredTrafficSample};
+pub use storage::{
+    DatabaseManager, StoredAlertEvent, StoredAppSetting, StoredAutomationRule,
+    StoredDiagnosticReport, StoredTrafficSample, StoredUserProfile,
+};

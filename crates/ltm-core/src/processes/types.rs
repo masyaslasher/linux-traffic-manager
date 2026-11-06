@@ -69,6 +69,8 @@ pub struct NetworkConnection {
     pub local_port: u16,
     pub remote_address: String,
     pub remote_port: u16,
+    #[serde(default)]
+    pub remote_hostname: Option<String>,
     pub state: SocketState,
     pub inode: u64,
     pub uid: u32,
@@ -102,4 +104,6 @@ pub struct ProcessAppSummary {
     pub udp_count: usize,
     pub attribution_status: ByteAttributionStatus,
     pub attribution_notice: String,
+    #[serde(default)]
+    pub remote_endpoints: Vec<String>,
 }

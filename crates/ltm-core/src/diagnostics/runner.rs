@@ -83,8 +83,43 @@ pub async fn run_network_diagnostics() -> DiagnosticReport {
         0.0
     };
 
-    // Synthesize overall network state:
-    // Do not mistake a single failed target for total failure
+    // Synthesize overall network state and actionable recommendations
+    let mut issues = Vec::new();
+    let mut recommendations = Vec::new();
+
+    if let Some(ref gw) = gateway_info {
+        if !gw.is_reachable {
+            issues.push("Default router / gateway is not answering local probes".to_string());
+            recommendations.push("Check physical cable connection or Wi-Fi router status".to_string());
+        }
+    } else {
+        issues.push("No default network route configured on this system".to_string());
+        recommendations.push("Reconnect to your Wi-Fi or wired network interface".to_string());
+    }
+
+    if successful_dns == 0 {
+        issues.push("DNS resolution completely failing across all test domains".to_string());
+        recommendations.push("Verify system DNS servers in /etc/resolv.conf or switch to 1.1.1.1 / 8.8.8.8".to_string());
+    } else if successful_dns < dns_results.len() {
+        issues.push("Some domains failed DNS resolution (partial degradation)".to_string());
+    }
+
+    if overall_packet_loss > 15.0 {
+        issues.push(format!("High packet loss detected ({:.1}%)", overall_packet_loss));
+        recommendations.push("Investigate channel interference, heavy local downloads, or ISP issues".to_string());
+    }
+
+    if overall_avg_latency > 150.0 {
+        issues.push(format!("High latency observed ({:.0} ms)", overall_avg_latency));
+        recommendations.push("High network queueing (bufferbloat) or remote server congestion".to_string());
+    }
+
+    let summary = if issues.is_empty() {
+        format!("All network systems operating optimally. Average latency: {:.1} ms, DNS response: {:.1} ms.", overall_avg_latency, avg_dns_latency)
+    } else {
+        format!("Detected {} potential issue(s). Review recommendations below.", issues.len())
+    };
+
     let network_status = if total_successful > 0 && successful_dns > 0 {
         if overall_packet_loss > 30.0 || successful_dns < dns_results.len() {
             "Degraded".to_string()
@@ -111,5 +146,8 @@ pub async fn run_network_diagnostics() -> DiagnosticReport {
         packet_loss_percent: overall_packet_loss,
         dns_checks: dns_results,
         probes: probe_results,
+        summary,
+        issues_found: issues,
+        recommendations,
     }
 }

@@ -93,10 +93,37 @@ pub fn get_system_interface_addresses() -> HashMap<String, Vec<String>> {
     map
 }
 
-/// Inspect /sys/class/net/<name> attributes (operstate, speed, address)
-pub fn read_sysfs_interface_info(
-    iface_name: &str,
-) -> (InterfaceState, Option<String>, Option<i64>) {
+/// Read DNS nameservers from system /etc/resolv.conf
+pub fn read_system_dns_servers() -> Vec<String> {
+    let mut servers = Vec::new();
+    if let Ok(content) = fs::read_to_string("/etc/resolv.conf") {
+        for line in content.lines() {
+            let line = line.trim();
+            if line.starts_with("nameserver") {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() >= 2 && !servers.contains(&parts[1].to_string()) {
+                    servers.push(parts[1].to_string());
+                }
+            }
+        }
+    }
+    servers
+}
+
+/// Extra device attributes from /sys/class/net/<name>
+#[derive(Debug, Clone, Default)]
+pub struct SysfsAttributes {
+    pub operstate: InterfaceState,
+    pub mac: Option<String>,
+    pub speed_mbps: Option<i64>,
+    pub mtu: Option<u32>,
+    pub carrier: Option<bool>,
+    pub duplex: Option<String>,
+    pub driver: Option<String>,
+}
+
+/// Inspect /sys/class/net/<name> attributes (operstate, speed, address, mtu, carrier, duplex, driver)
+pub fn read_sysfs_interface_info(iface_name: &str) -> SysfsAttributes {
     let base_path = Path::new("/sys/class/net").join(iface_name);
 
     // Read operstate
@@ -111,12 +138,45 @@ pub fn read_sysfs_interface_info(
         .filter(|s| !s.is_empty() && s != "00:00:00:00:00:00");
 
     // Read speed in Mbps (may fail for virtual or wireless interfaces)
-    let speed = fs::read_to_string(base_path.join("speed"))
+    let speed_mbps = fs::read_to_string(base_path.join("speed"))
         .ok()
         .and_then(|s| s.trim().parse::<i64>().ok())
         .filter(|&spd| spd > 0);
 
-    (operstate, mac, speed)
+    // Read MTU
+    let mtu = fs::read_to_string(base_path.join("mtu"))
+        .ok()
+        .and_then(|s| s.trim().parse::<u32>().ok());
+
+    // Read carrier state
+    let carrier = fs::read_to_string(base_path.join("carrier"))
+        .ok()
+        .and_then(|s| match s.trim() {
+            "1" => Some(true),
+            "0" => Some(false),
+            _ => None,
+        });
+
+    // Read duplex (full/half)
+    let duplex = fs::read_to_string(base_path.join("duplex"))
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
+    // Read driver name if device symlink exists
+    let driver = fs::read_link(base_path.join("device/driver"))
+        .ok()
+        .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()));
+
+    SysfsAttributes {
+        operstate,
+        mac,
+        speed_mbps,
+        mtu,
+        carrier,
+        duplex,
+        driver,
+    }
 }
 
 /// Discover all network interfaces on the current Linux host
@@ -124,24 +184,44 @@ pub fn discover_interfaces() -> Vec<NetworkInterface> {
     let dev_content = fs::read_to_string("/proc/net/dev").unwrap_or_default();
     let dev_counters = parse_proc_net_dev(&dev_content);
     let mut addresses = get_system_interface_addresses();
+    let dns_servers = read_system_dns_servers();
+
+    // Look up default gateway if discoverable
+    let default_gw = crate::diagnostics::discover_default_gateway();
 
     let mut result = Vec::new();
 
     for (name, counters) in dev_counters {
         let is_loopback = name == "lo";
-        let (state, mac, speed) = read_sysfs_interface_info(&name);
+        let sysfs = read_sysfs_interface_info(&name);
         let ip_list = addresses.remove(&name).unwrap_or_default();
 
-        let is_up = state == InterfaceState::Up || (is_loopback && counters.rx_packets > 0);
+        let is_up = sysfs.operstate == InterfaceState::Up || (is_loopback && counters.rx_packets > 0);
+
+        let gateway_str = if let Some((ref gw_iface, ref gw_ip)) = default_gw {
+            if gw_iface == &name {
+                Some(gw_ip.to_string())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         result.push(NetworkInterface {
             name,
             ip_addresses: ip_list,
-            mac_address: mac,
-            state,
+            mac_address: sysfs.mac,
+            state: sysfs.operstate,
             is_up,
             is_loopback,
-            speed_mbps: speed,
+            speed_mbps: sysfs.speed_mbps,
+            mtu: sysfs.mtu,
+            carrier: sysfs.carrier,
+            duplex: sysfs.duplex,
+            driver: sysfs.driver,
+            dns_servers: dns_servers.clone(),
+            gateway: gateway_str,
             rx_bytes: counters.rx_bytes,
             tx_bytes: counters.tx_bytes,
             rx_packets: counters.rx_packets,

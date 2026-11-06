@@ -4,7 +4,10 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use super::migrations::apply_migrations;
-use super::models::{StoredDiagnosticReport, StoredTrafficSample};
+use super::models::{
+    StoredAlertEvent, StoredAppSetting, StoredAutomationRule, StoredDiagnosticReport,
+    StoredTrafficSample, StoredUserProfile,
+};
 use crate::diagnostics::types::DiagnosticReport;
 
 #[derive(Clone)]
@@ -189,6 +192,264 @@ impl DatabaseManager {
         Ok(results)
     }
 
+    /// Get all automation rules
+    pub fn get_automation_rules(&self) -> Result<Vec<StoredAutomationRule>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, name, description, enabled, trigger_type, condition_json, action_type, action_params_json, cooldown_secs, last_triggered_ts, trigger_count
+             FROM automation_rules
+             ORDER BY name ASC",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok(StoredAutomationRule {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                description: row.get(2)?,
+                enabled: row.get::<_, i64>(3)? != 0,
+                trigger_type: row.get(4)?,
+                condition_json: row.get(5)?,
+                action_type: row.get(6)?,
+                action_params_json: row.get(7)?,
+                cooldown_secs: row.get::<_, i64>(8)? as u32,
+                last_triggered_ts: row.get(9)?,
+                trigger_count: row.get::<_, i64>(10)? as u64,
+            })
+        })?;
+
+        let mut rules = Vec::new();
+        for r in rows {
+            rules.push(r?);
+        }
+        Ok(rules)
+    }
+
+    /// Insert or update an automation rule
+    pub fn save_automation_rule(&self, rule: &StoredAutomationRule) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO automation_rules (id, name, description, enabled, trigger_type, condition_json, action_type, action_params_json, cooldown_secs, last_triggered_ts, trigger_count)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+             ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                description = excluded.description,
+                enabled = excluded.enabled,
+                trigger_type = excluded.trigger_type,
+                condition_json = excluded.condition_json,
+                action_type = excluded.action_type,
+                action_params_json = excluded.action_params_json,
+                cooldown_secs = excluded.cooldown_secs,
+                last_triggered_ts = excluded.last_triggered_ts,
+                trigger_count = excluded.trigger_count",
+            params![
+                rule.id,
+                rule.name,
+                rule.description,
+                if rule.enabled { 1 } else { 0 },
+                rule.trigger_type,
+                rule.condition_json,
+                rule.action_type,
+                rule.action_params_json,
+                rule.cooldown_secs as i64,
+                rule.last_triggered_ts,
+                rule.trigger_count as i64,
+            ],
+        )?;
+        Ok(())
+    }
+
+    /// Delete an automation rule by ID
+    pub fn delete_automation_rule(&self, rule_id: &str) -> Result<bool> {
+        let conn = self.conn.lock().unwrap();
+        let affected = conn.execute("DELETE FROM automation_rules WHERE id = ?1", params![rule_id])?;
+        Ok(affected > 0)
+    }
+
+    /// Toggle rule enabled status
+    pub fn toggle_automation_rule(&self, rule_id: &str, enabled: bool) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "UPDATE automation_rules SET enabled = ?1 WHERE id = ?2",
+            params![if enabled { 1 } else { 0 }, rule_id],
+        )?;
+        Ok(())
+    }
+
+    /// Record a triggered alert event
+    pub fn record_alert_event(&self, alert: &StoredAlertEvent) -> Result<i64> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO alert_events (timestamp, rule_id, severity, title, message, acknowledged)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![
+                alert.timestamp,
+                alert.rule_id,
+                alert.severity,
+                alert.title,
+                alert.message,
+                if alert.acknowledged { 1 } else { 0 },
+            ],
+        )?;
+        Ok(conn.last_insert_rowid())
+    }
+
+    /// Query recent alerts
+    pub fn get_alert_events(&self, limit: usize) -> Result<Vec<StoredAlertEvent>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, timestamp, rule_id, severity, title, message, acknowledged
+             FROM alert_events
+             ORDER BY timestamp DESC
+             LIMIT ?1",
+        )?;
+
+        let rows = stmt.query_map(params![limit as i64], |row| {
+            Ok(StoredAlertEvent {
+                id: Some(row.get(0)?),
+                timestamp: row.get(1)?,
+                rule_id: row.get(2)?,
+                severity: row.get(3)?,
+                title: row.get(4)?,
+                message: row.get(5)?,
+                acknowledged: row.get::<_, i64>(6)? != 0,
+            })
+        })?;
+
+        let mut alerts = Vec::new();
+        for r in rows {
+            alerts.push(r?);
+        }
+        Ok(alerts)
+    }
+
+    /// Acknowledge an alert
+    pub fn acknowledge_alert(&self, alert_id: i64) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "UPDATE alert_events SET acknowledged = 1 WHERE id = ?1",
+            params![alert_id],
+        )?;
+        Ok(())
+    }
+
+    /// Clear all alerts
+    pub fn clear_alert_events(&self) -> Result<usize> {
+        let conn = self.conn.lock().unwrap();
+        let count = conn.execute("DELETE FROM alert_events", [])?;
+        Ok(count)
+    }
+
+    /// Retrieve all profiles
+    pub fn get_user_profiles(&self) -> Result<Vec<StoredUserProfile>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, name, description, is_active, settings_json
+             FROM user_profiles
+             ORDER BY id ASC",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok(StoredUserProfile {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                description: row.get(2)?,
+                is_active: row.get::<_, i64>(3)? != 0,
+                settings_json: row.get(4)?,
+            })
+        })?;
+
+        let mut profiles = Vec::new();
+        for r in rows {
+            profiles.push(r?);
+        }
+        Ok(profiles)
+    }
+
+    /// Set active profile
+    pub fn set_active_profile(&self, profile_id: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("UPDATE user_profiles SET is_active = 0", [])?;
+        conn.execute(
+            "UPDATE user_profiles SET is_active = 1 WHERE id = ?1",
+            params![profile_id],
+        )?;
+        Ok(())
+    }
+
+    /// Get persistent app setting by key
+    pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT value_json FROM app_settings WHERE key = ?1")?;
+        let mut rows = stmt.query(params![key])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get(0)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Get persistent app setting as structured StoredAppSetting
+    pub fn get_app_setting(&self, key: &str) -> Result<Option<StoredAppSetting>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT key, value_json, updated_at FROM app_settings WHERE key = ?1")?;
+        let mut rows = stmt.query(params![key])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some(StoredAppSetting {
+                key: row.get(0)?,
+                value_json: row.get(1)?,
+                updated_at: row.get(2)?,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Save persistent app setting
+    pub fn set_setting(&self, key: &str, value_json: &str) -> Result<()> {
+        let now = chrono::Utc::now().timestamp();
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO app_settings (key, value_json, updated_at)
+             VALUES (?1, ?2, ?3)
+             ON CONFLICT(key) DO UPDATE SET
+                value_json = excluded.value_json,
+                updated_at = excluded.updated_at",
+            params![key, value_json, now],
+        )?;
+        Ok(())
+    }
+
+    /// Export traffic history as CSV format
+    pub fn export_traffic_samples_csv(&self, start_ts: i64, end_ts: i64) -> Result<String> {
+        let samples = self.query_traffic_history(None, start_ts, end_ts, 100_000)?;
+        let mut csv = String::from("id,timestamp,interface_name,rx_speed_bps,tx_speed_bps,rx_bytes_total,tx_bytes_total\n");
+        for s in samples {
+            csv.push_str(&format!(
+                "{},{},\"{}\",{:.2},{:.2},{},{}\n",
+                s.id.unwrap_or(0),
+                s.timestamp,
+                s.interface_name,
+                s.rx_speed_bps,
+                s.tx_speed_bps,
+                s.rx_bytes_total,
+                s.tx_bytes_total
+            ));
+        }
+        Ok(csv)
+    }
+
+    /// Export traffic history as JSON format
+    pub fn export_traffic_samples_json(&self, start_ts: i64, end_ts: i64) -> Result<String> {
+        let samples = self.query_traffic_history(None, start_ts, end_ts, 100_000)?;
+        serde_json::to_string_pretty(&samples).map_err(|e| {
+            rusqlite::Error::FromSqlConversionFailure(
+                0,
+                rusqlite::types::Type::Text,
+                Box::new(e),
+            )
+        })
+    }
+
     /// Prune data older than retention_days
     pub fn prune_retention(&self, retention_days: u32) -> Result<usize> {
         let cutoff_ts = chrono::Utc::now().timestamp() - (retention_days as i64 * 86400);
@@ -204,7 +465,12 @@ impl DatabaseManager {
             params![cutoff_ts],
         )?;
 
-        Ok(deleted_samples + deleted_diags)
+        let deleted_alerts = conn.execute(
+            "DELETE FROM alert_events WHERE timestamp < ?1",
+            params![cutoff_ts],
+        )?;
+
+        Ok(deleted_samples + deleted_diags + deleted_alerts)
     }
 
     /// Returns size of SQLite database file in bytes

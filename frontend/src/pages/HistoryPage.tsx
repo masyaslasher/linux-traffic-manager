@@ -150,37 +150,35 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="histDownload" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stop-color="#A78BFA" stopOpacity={0.4} />
-                    <stop offset="95%" stop-color="#8B5CF6" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="var(--chart-rx)" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="var(--chart-rx)" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="histUpload" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stop-color="#EC4899" stopOpacity={0.3} />
-                    <stop offset="95%" stop-color="#EC4899" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="var(--chart-tx)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--chart-tx)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#29243A" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
                 <XAxis
                   dataKey="time"
-                  stroke="#6B6280"
+                  stroke="var(--text-dim)"
                   fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#29243A' }}
                 />
                 <YAxis
-                  stroke="#6B6280"
+                  stroke="var(--text-dim)"
                   fontSize={10}
                   tickLine={false}
-                  axisLine={{ stroke: '#29243A' }}
                   tickFormatter={formatSpeed}
                   width={75}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#12101C',
-                    borderColor: '#29243A',
+                    backgroundColor: 'var(--bg-surface-elevated)',
+                    borderColor: 'var(--border-subtle)',
                     borderRadius: '8px',
                     fontSize: '12px',
-                    color: '#F5F3FF',
+                    color: 'var(--text-main)',
                   }}
                   formatter={(val: any, name: any) => [
                     formatSpeed(Number(val) || 0),
@@ -190,16 +188,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 <Area
                   type="monotone"
                   dataKey="download"
-                  stroke="#A78BFA"
-                  strokeWidth={2}
+                  stroke="var(--chart-rx)"
+                  strokeWidth={1.5}
                   fillOpacity={1}
                   fill="url(#histDownload)"
                 />
                 <Area
                   type="monotone"
                   dataKey="upload"
-                  stroke="#EC4899"
-                  strokeWidth={2}
+                  stroke="var(--chart-tx)"
+                  strokeWidth={1.5}
                   fillOpacity={1}
                   fill="url(#histUpload)"
                 />

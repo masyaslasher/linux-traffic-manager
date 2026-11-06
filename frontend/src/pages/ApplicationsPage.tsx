@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
+  ChevronDown,
+  ChevronRight,
   Cpu,
+  Globe,
   Info,
   Search,
-  Terminal,
 } from 'lucide-react';
-import { Badge } from '../components/common/Badge';
 import { Card } from '../components/common/Card';
 import { EmptyState } from '../components/common/EmptyState';
 import { Input } from '../components/common/Input';
@@ -17,44 +18,67 @@ interface ApplicationsPageProps {
 
 export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedPid, setExpandedPid] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<'connections' | 'name' | 'pid'>('connections');
 
-  const filteredApps = applications.filter(
-    (app) =>
-      app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.executable_path.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.pid.toString().includes(searchTerm)
-  );
+  const filteredApps = applications
+    .filter(
+      (app) =>
+        app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.executable_path.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.pid.toString().includes(searchTerm)
+    )
+    .sort((a, b) => {
+      if (sortBy === 'connections') return b.connection_count - a.connection_count;
+      if (sortBy === 'pid') return a.pid - b.pid;
+      return a.name.localeCompare(b.name);
+    });
 
   return (
     <div className="space-y-6">
       {/* Accuracy & Integrity Notice Card */}
-      <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3 text-xs text-text-primary">
-        <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+      <div className="bg-surface-secondary/60 border border-border rounded-lg p-3.5 flex items-start gap-3 text-xs text-text-primary">
+        <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-semibold text-text-primary">
             Linux Socket-to-Process Attribution
           </p>
-          <p className="text-text-secondary leading-relaxed">
-            LTM correlates active sockets to processes via Linux <code className="text-primary font-mono bg-surface-secondary px-1 py-0.5 rounded">/proc/[pid]/fd</code>.
+          <p className="text-text-muted leading-relaxed">
+            LTM correlates active sockets to processes via Linux <code className="text-primary font-mono bg-surface px-1 py-0.5 rounded border border-border text-[11px]">/proc/[pid]/fd</code> symlinks.
             In compliance with our integrity policy, connection counts are not fabricated into estimated byte counts.
-            Per-process byte accounting requires kernel eBPF stream tracking.
           </p>
         </div>
       </div>
 
       {/* Control bar */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="w-80">
           <Input
-            placeholder="Search by process, executable, PID, or user..."
+            placeholder="Filter by name, binary path, PID, user..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="w-4 h-4" />}
           />
         </div>
-        <div className="text-xs text-text-secondary font-mono">
-          Showing {filteredApps.length} of {applications.length} active processes
+        <div className="flex items-center gap-3 text-xs">
+          <span className="text-text-muted">Sort by:</span>
+          {(['connections', 'name', 'pid'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              className={`px-2.5 py-1 rounded text-xs capitalize transition-colors ${
+                sortBy === s
+                  ? 'bg-primary text-white font-semibold'
+                  : 'bg-surface border border-border text-text-muted hover:text-text-primary'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+          <span className="text-text-dim font-mono ml-2">
+            {filteredApps.length} of {applications.length}
+          </span>
         </div>
       </div>
 
@@ -74,64 +98,97 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-border/80 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
-                  <th className="pb-3 pl-2">Application / Process</th>
-                  <th className="pb-3">PID</th>
-                  <th className="pb-3">User</th>
-                  <th className="pb-3 text-center">TCP Sockets</th>
-                  <th className="pb-3 text-center">UDP Sockets</th>
-                  <th className="pb-3 text-center">Total Connections</th>
-                  <th className="pb-3 pr-2 text-right">Attribution Model</th>
+                <tr className="border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+                  <th className="pb-2.5 pl-2">Application / Process</th>
+                  <th className="pb-2.5">PID</th>
+                  <th className="pb-2.5">User</th>
+                  <th className="pb-2.5 text-center">TCP Sockets</th>
+                  <th className="pb-2.5 text-center">UDP Sockets</th>
+                  <th className="pb-2.5 text-center">Total Sockets</th>
+                  <th className="pb-2.5 pr-2 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/40 text-xs">
-                {filteredApps.map((app) => (
-                  <tr
-                    key={app.pid}
-                    className="hover:bg-surface-secondary/40 transition-colors group"
-                  >
-                    <td className="py-3.5 pl-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 bg-surface-secondary rounded-lg text-primary border border-border group-hover:border-primary/40">
-                          <Terminal className="w-4 h-4" />
-                        </div>
-                        <div className="overflow-hidden">
-                          <div className="font-semibold text-text-primary truncate max-w-[220px]">
-                            {app.name}
+              <tbody className="divide-y divide-border/40 text-xs font-mono">
+                {filteredApps.map((app) => {
+                  const isExpanded = expandedPid === app.pid;
+                  return (
+                    <React.Fragment key={app.pid}>
+                      <tr
+                        onClick={() => setExpandedPid(isExpanded ? null : app.pid)}
+                        className="hover:bg-surface-secondary/40 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-2.5 pl-2">
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? (
+                              <ChevronDown className="w-3.5 h-3.5 text-primary" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5 text-text-dim" />
+                            )}
+                            <div className="overflow-hidden">
+                              <div className="font-sans font-semibold text-text-primary truncate max-w-[220px]">
+                                {app.name}
+                              </div>
+                              <div
+                                className="text-[10px] text-text-dim truncate max-w-[280px]"
+                                title={app.executable_path}
+                              >
+                                {app.executable_path}
+                              </div>
+                            </div>
                           </div>
-                          <div
-                            className="text-[11px] font-mono text-text-muted truncate max-w-[280px]"
-                            title={app.executable_path}
-                          >
-                            {app.executable_path}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 font-mono text-text-secondary">{app.pid}</td>
-                    <td className="py-3 text-text-secondary">
-                      <span className="font-mono bg-surface-secondary px-2 py-0.5 rounded border border-border/60">
-                        {app.user}
-                      </span>
-                    </td>
-                    <td className="py-3 text-center font-mono text-text-primary">
-                      {app.tcp_count}
-                    </td>
-                    <td className="py-3 text-center font-mono text-text-primary">
-                      {app.udp_count}
-                    </td>
-                    <td className="py-3 text-center">
-                      <span className="font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-                        {app.connection_count}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-2 text-right">
-                      <Badge variant="primary" size="sm">
-                        Connection-based
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+                        </td>
+                        <td className="py-2.5 text-text-secondary">{app.pid}</td>
+                        <td className="py-2.5 text-text-secondary font-sans">
+                          <span className="bg-surface-secondary px-1.5 py-0.5 rounded border border-border text-[11px]">
+                            {app.user}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-center text-primary">{app.tcp_count}</td>
+                        <td className="py-2.5 text-center text-secondary">{app.udp_count}</td>
+                        <td className="py-2.5 text-center font-bold text-text-primary">
+                          <span className="px-2 py-0.5 rounded-full bg-surface-secondary border border-border text-[11px]">
+                            {app.connection_count}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-2 text-right font-sans">
+                          <span className="text-[10px] text-text-dim">
+                            {isExpanded ? 'Collapse' : 'Inspect'}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Expanded Endpoints Drawer */}
+                      {isExpanded && (
+                        <tr className="bg-surface-secondary/20">
+                          <td colSpan={7} className="p-3 pl-8">
+                            <div className="space-y-1.5">
+                              <div className="text-[10px] uppercase font-semibold text-text-muted flex items-center gap-1.5">
+                                <Globe className="w-3 h-3 text-primary" />
+                                Active Remote Destinations:
+                              </div>
+                              {app.remote_endpoints && app.remote_endpoints.length > 0 ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {app.remote_endpoints.map((ep, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="px-2 py-0.5 rounded bg-surface border border-border text-[10px] font-mono text-text-secondary"
+                                    >
+                                      {ep}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-[10px] text-text-dim">
+                                  Sockets in listening mode or waiting for remote establishment.
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

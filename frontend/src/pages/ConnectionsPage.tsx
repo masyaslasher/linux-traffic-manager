@@ -206,8 +206,15 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({ connections })
                     <td className="py-3 text-text-primary">
                       {conn.local_address}:<span className="font-bold text-primary">{conn.local_port}</span>
                     </td>
-                    <td className="py-3 text-text-secondary">
-                      {conn.remote_address}:{conn.remote_port}
+                    <td className="py-2.5 text-text-secondary">
+                      <div>
+                        <span>{conn.remote_address}:{conn.remote_port}</span>
+                        {conn.remote_hostname && (
+                          <span className="text-[10px] text-primary block font-sans font-medium">
+                            {conn.remote_hostname}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 font-sans">
                       <Badge variant={getStateBadgeVariant(conn.state)} size="sm">

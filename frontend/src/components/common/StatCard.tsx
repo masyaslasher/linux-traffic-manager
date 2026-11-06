@@ -17,11 +17,11 @@ export const StatCard: React.FC<StatCardProps> = ({
   color = 'default',
 }) => {
   const colorMap = {
-    primary: 'border-primary/30 text-primary shadow-glow-primary/10',
-    secondary: 'border-secondary/30 text-secondary shadow-glow-secondary/10',
-    success: 'border-success/30 text-success',
-    warning: 'border-warning/30 text-warning',
-    default: 'border-border text-primary',
+    primary: 'border-border text-primary hover:border-primary/40',
+    secondary: 'border-border text-secondary hover:border-secondary/40',
+    success: 'border-border text-success hover:border-success/40',
+    warning: 'border-border text-warning hover:border-warning/40',
+    default: 'border-border text-text-primary hover:border-border/80',
   };
 
   const bgIconMap = {
@@ -34,16 +34,16 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`bg-surface border rounded-xl p-4 transition-all duration-200 hover:border-border/80 ${colorMap[color]}`}
+      className={`bg-surface border rounded-lg p-4 transition-colors duration-150 ${colorMap[color]}`}
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-text-secondary">
           {label}
         </span>
-        <div className={`p-2 rounded-lg ${bgIconMap[color]}`}>{icon}</div>
+        <div className={`p-1.5 rounded-md ${bgIconMap[color]}`}>{icon}</div>
       </div>
       <div className="mt-3">
-        <div className="text-2xl font-bold tracking-tight text-text-primary font-mono">
+        <div className="text-2xl font-semibold tracking-tight text-text-primary font-mono">
           {value}
         </div>
         {subvalue && (

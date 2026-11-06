@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 /// Operstate of a Linux network interface
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum InterfaceState {
     Up,
     Down,
+    #[default]
     Unknown,
 }
 
@@ -29,6 +30,18 @@ pub struct NetworkInterface {
     pub is_up: bool,
     pub is_loopback: bool,
     pub speed_mbps: Option<i64>,
+    #[serde(default)]
+    pub mtu: Option<u32>,
+    #[serde(default)]
+    pub carrier: Option<bool>,
+    #[serde(default)]
+    pub duplex: Option<String>,
+    #[serde(default)]
+    pub driver: Option<String>,
+    #[serde(default)]
+    pub dns_servers: Vec<String>,
+    #[serde(default)]
+    pub gateway: Option<String>,
     pub rx_bytes: u64,
     pub tx_bytes: u64,
     pub rx_packets: u64,
@@ -59,10 +72,40 @@ pub struct SpeedMetrics {
     pub tx_speed_bps: f64,
     pub rx_speed_human: String,
     pub tx_speed_human: String,
+    #[serde(default)]
+    pub rx_speed_bits_human: String,
+    #[serde(default)]
+    pub tx_speed_bits_human: String,
     pub rx_bytes_total: u64,
     pub tx_bytes_total: u64,
     pub rx_total_human: String,
     pub tx_total_human: String,
+    #[serde(default)]
+    pub peak_rx_speed_bps: f64,
+    #[serde(default)]
+    pub peak_tx_speed_bps: f64,
+    #[serde(default)]
+    pub peak_rx_speed_human: String,
+    #[serde(default)]
+    pub peak_tx_speed_human: String,
+    #[serde(default)]
+    pub avg_rx_speed_bps: f64,
+    #[serde(default)]
+    pub avg_tx_speed_bps: f64,
+    #[serde(default)]
+    pub avg_rx_speed_human: String,
+    #[serde(default)]
+    pub avg_tx_speed_human: String,
+    #[serde(default)]
+    pub active_connections: usize,
+    #[serde(default)]
+    pub tcp_connections: usize,
+    #[serde(default)]
+    pub udp_connections: usize,
+    #[serde(default)]
+    pub connection_uptime_secs: u64,
+    #[serde(default)]
+    pub bandwidth_utilization_percent: Option<f64>,
 }
 
 /// A point in time for the real-time speed chart

@@ -7,38 +7,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#090811',
+        background: 'var(--bg-app)',
         surface: {
-          DEFAULT: '#12101C',
-          secondary: '#1A1728',
-          hover: '#221E34',
+          DEFAULT: 'var(--bg-surface)',
+          secondary: 'var(--bg-surface-elevated)',
+          hover: 'var(--bg-surface-hover)',
         },
-        border: '#29243A',
+        border: 'var(--border-subtle)',
         primary: {
-          DEFAULT: '#A78BFA',
-          hover: '#8B5CF6',
-          light: '#C4B5FD',
+          DEFAULT: 'var(--accent)',
+          hover: 'var(--accent-hover)',
+          subtle: 'var(--accent-subtle)',
         },
         secondary: {
-          DEFAULT: '#EC4899',
-          hover: '#DB2777',
+          DEFAULT: 'var(--chart-tx)',
         },
         text: {
-          primary: '#F5F3FF',
-          secondary: '#A49BB8',
-          muted: '#6B6280',
+          primary: 'var(--text-main)',
+          secondary: 'var(--text-muted)',
+          muted: 'var(--text-dim)',
         },
-        success: '#34D399',
-        warning: '#FBBF24',
-        error: '#F87171',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
+        error: 'var(--error)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-      },
-      boxShadow: {
-        'glow-primary': '0 0 20px -5px rgba(167, 139, 250, 0.3)',
-        'glow-secondary': '0 0 20px -5px rgba(236, 72, 153, 0.3)',
       },
     },
   },

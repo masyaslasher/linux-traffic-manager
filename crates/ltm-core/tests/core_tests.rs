@@ -146,4 +146,86 @@ fn test_data_serialization() {
 
     assert_eq!(format_bytes(1048576.0), "1.00 MB");
     assert_eq!(format_speed(2097152.0), "2.00 MB/s");
+    assert_eq!(ltm_core::network::format_speed_bits(125000.0), "1.00 Mbit/s");
+}
+
+#[test]
+fn test_automation_rules_and_alerts() {
+    let db = DatabaseManager::new_in_memory().expect("In-memory SQLite DB");
+
+    // Verify default rules were seeded in migration v2
+    let rules = db.get_automation_rules().expect("Get rules");
+    assert!(!rules.is_empty());
+    assert!(rules.iter().any(|r| r.trigger_type == "download_above"));
+
+    // Toggle rule
+    let first_id = &rules[0].id;
+    db.toggle_automation_rule(first_id, false).expect("Toggle rule");
+    let updated_rules = db.get_automation_rules().expect("Get rules");
+    assert!(!updated_rules.iter().find(|r| &r.id == first_id).unwrap().enabled);
+
+    // Record an alert
+    let alert = ltm_core::storage::StoredAlertEvent {
+        id: None,
+        timestamp: 1700000000,
+        rule_id: Some(first_id.clone()),
+        severity: "warning".to_string(),
+        title: "Test Alert".to_string(),
+        message: "High bandwidth utilization".to_string(),
+        acknowledged: false,
+    };
+    let alert_id = db.record_alert_event(&alert).expect("Record alert");
+    let alerts = db.get_alert_events(10).expect("Get alerts");
+    assert_eq!(alerts.len(), 1);
+    assert_eq!(alerts[0].title, "Test Alert");
+
+    // Acknowledge alert
+    db.acknowledge_alert(alert_id).expect("Ack alert");
+    let alerts = db.get_alert_events(10).expect("Get alerts");
+    assert!(alerts[0].acknowledged);
+}
+
+#[test]
+fn test_user_profiles_and_settings() {
+    let db = DatabaseManager::new_in_memory().expect("In-memory SQLite DB");
+
+    // Verify default profiles
+    let profiles = db.get_user_profiles().expect("Profiles");
+    assert_eq!(profiles.len(), 6);
+    let active = profiles.iter().find(|p| p.is_active).unwrap();
+    assert_eq!(active.id, "balanced");
+
+    // Switch active profile to gaming
+    db.set_active_profile("gaming").expect("Set gaming");
+    let profiles = db.get_user_profiles().expect("Profiles");
+    assert!(profiles.iter().find(|p| p.id == "gaming").unwrap().is_active);
+    assert!(!profiles.iter().find(|p| p.id == "balanced").unwrap().is_active);
+
+    // Setting key-value test
+    db.set_setting("theme", "\"slate\"").expect("Set setting");
+    let setting = db.get_setting("theme").expect("Get setting");
+    assert_eq!(setting.as_deref(), Some("\"slate\""));
+}
+
+#[test]
+fn test_csv_and_json_export() {
+    let db = DatabaseManager::new_in_memory().expect("In-memory SQLite DB");
+    let sample = StoredTrafficSample {
+        id: None,
+        timestamp: 1700000000,
+        interface_name: "eth0".to_string(),
+        rx_speed_bps: 1048576.0,
+        tx_speed_bps: 524288.0,
+        rx_bytes_total: 50000000,
+        tx_bytes_total: 20000000,
+    };
+    db.record_traffic_sample(&sample).expect("Record sample");
+
+    let csv = db.export_traffic_samples_csv(0, i64::MAX).expect("Export CSV");
+    assert!(csv.contains("eth0"));
+    assert!(csv.contains("1048576.00"));
+
+    let json = db.export_traffic_samples_json(0, i64::MAX).expect("Export JSON");
+    assert!(json.contains("eth0"));
+    assert!(json.contains("1048576"));
 }
