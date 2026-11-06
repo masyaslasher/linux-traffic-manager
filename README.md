@@ -18,6 +18,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 [![Fedora](https://img.shields.io/badge/Fedora-40%20%7C%2041%20%7C%2042%20%7C%2044-blue.svg)](https://fedoraproject.org/)
 [![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange.svg)](https://www.rust-lang.org/)
+[![Languages: 10](https://img.shields.io/badge/Languages-10%20Supported-brightgreen.svg)](#-поддерживаемые-языки-и-наречия--supported-languages--dialects)
 [![GitHub Release](https://img.shields.io/github/v/release/masyaslasher/linux-traffic-manager?color=orange)](https://github.com/masyaslasher/linux-traffic-manager/releases)
 
 </div>
@@ -56,6 +57,27 @@
   7. **Diagnostics:** Automated DNS resolution, gateway reachability, ping latency, port reachability, and hop traceroute probes.
   8. **Store:** Built-in marketplace for 1-click theme switching and utility modules.
   9. **History & Analytics:** Historical traffic analytics backed by local SQLite storage with multi-series charts and CSV/JSON export.
+
+---
+
+## 🌐 Поддерживаемые языки и наречия / Supported Languages & Dialects
+
+LTM оснащён полностью реактивным движком интернационализации (i18n): **смена языка происходит мгновенно в 1 клик прямо в селекторе шапки приложения без перезагрузки интерфейса или потери данных**.
+
+Поддерживаются **10 полноценных языков, диалектов и исторических наречий**:
+
+| Флаг / Иконка | Язык / Наречие | Оригинальное название (Native Name) | Код | Описание и стилистика перевода |
+|:---:|---|---|:---:|---|
+| 🇷🇺 | **Русский** | Русский | `ru` | Современный литературный русский язык со всей технической сетевой терминологией. |
+| 🇩🇪 | **Немецкий** | Deutsch | `de` | Точная немецкая инженерная терминология (*Netzwerkverkehr, Verbindungen, Überwachung*). |
+| 🇺🇦 | **Украинский** | Українська | `uk` | Повна українська локалізація (*Мережева активність, Активні з'єднання, Інтерфейси*). |
+| 📜 | **Дореформенный русский** | Дореформенный русскій | `ru_pre` | Дореволюционная орфография Российской Империи с ятями (ѣ), ерами (ъ), ижицей и фитой (*Панель мониторинга, Соединенія, Скорость передачи*). |
+| 🐎 | **Гутар донских казаков** | Гутаръ донскихъ казаковъ | `don_cossack` | Исторический диалект вольного донского казачества (*Сетевая справа, Приключки, Заставы, Гутарить*). |
+| 🇫🇷 | **Французский** | Français | `fr` | Langue française standard (*Trafic réseau, Surveillance des processus, Outils de diagnostic*). |
+| 🇵🇱 | **Польский** | Polski | `pl` | Język polski (*Aktywność sieciowa, Połączenia, Menedżer interfejsów*). |
+| 🌐 | **Межславянский** | Medžuslovjanski | `interslavic` | Панславянский искусственный вспомогательный язык, понятный без изучения всем славянским народам (*Sěťova aktivnost, Pripojeńa, Nastavjeńa*). |
+| 🌻 | **Суржик** | Суржик | `surzhyk` | Живой разговорный восточнославянский суржик (*Шо там з инетом, Проги в сети, Настройки інтерфейсів*). |
+| 🏔️ | **Русинский** | Русиньскый | `rusyn` | Традиционный карпато-русинский литературный язык (*Сїтьова активіта, Зъєднаня, Діаґностіка*). |
 
 ---
 
