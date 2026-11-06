@@ -18,6 +18,8 @@ import {
 import { Card } from '../components/common/Card';
 import { EmptyState } from '../components/common/EmptyState';
 import { StatCard } from '../components/common/StatCard';
+import { ChartTooltip, formatSpeedReadable } from '../components/common/ChartTooltip';
+import { useI18n } from '../i18n';
 import { StoredTrafficSample } from '../types';
 
 interface HistoryPageProps {
@@ -33,11 +35,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   onSelectRange,
   dbSizeBytes,
 }) => {
-  const formatSpeed = (val: number): string => {
-    if (val < 1024) return `${val.toFixed(0)} B/s`;
-    if (val < 1024 * 1024) return `${(val / 1024).toFixed(1)} KB/s`;
-    return `${(val / (1024 * 1024)).toFixed(2)} MB/s`;
-  };
+  const { t } = useI18n();
 
   const formatDbSize = (bytes: number): string => {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -78,7 +76,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
       {/* Range filter bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-text-primary">Historical Network Analytics</h3>
+          <h3 className="text-base font-bold text-text-primary">{t.history}</h3>
           <p className="text-xs text-text-secondary">
             Time-series bandwidth logs persisted locally in SQLite.
           </p>
@@ -91,7 +89,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               onClick={() => onSelectRange(rng)}
               className={`px-3 py-1 rounded-md transition-colors font-medium uppercase ${
                 selectedRange === rng
-                  ? 'bg-primary text-background font-semibold shadow-sm'
+                  ? 'bg-primary text-white font-semibold shadow-sm'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
             >
@@ -104,17 +102,17 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
       {/* Aggregate stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Peak Download"
-          value={formatSpeed(peakRx)}
+          label={t.peakDownload}
+          value={formatSpeedReadable(peakRx, 'bytes')}
           subvalue="Max Recorded Rx Rate"
-          icon={<ArrowDown className="w-5 h-5" />}
+          icon={<ArrowDown className="w-5 h-5 text-orange-400" />}
           color="primary"
         />
         <StatCard
-          label="Peak Upload"
-          value={formatSpeed(peakTx)}
+          label={t.peakUpload}
+          value={formatSpeedReadable(peakTx, 'bytes')}
           subvalue="Max Recorded Tx Rate"
-          icon={<ArrowUp className="w-5 h-5" />}
+          icon={<ArrowUp className="w-5 h-5 text-cyan-400" />}
           color="secondary"
         />
         <StatCard
@@ -147,18 +145,28 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
             />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="histDownload" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-rx)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--chart-rx)" stopOpacity={0.0} />
+                  <filter id="histGlowOrange" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#F97316" floodOpacity="0.6" />
+                  </filter>
+                  <filter id="histGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06B6D4" floodOpacity="0.6" />
+                  </filter>
+                  <linearGradient id="histDownloadGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#F97316" stopOpacity={0.4} />
+                    <stop offset="40%" stopColor="#FB923C" stopOpacity={0.18} />
+                    <stop offset="80%" stopColor="#F97316" stopOpacity={0.04} />
+                    <stop offset="100%" stopColor="#F97316" stopOpacity={0.0} />
                   </linearGradient>
-                  <linearGradient id="histUpload" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-tx)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--chart-tx)" stopOpacity={0.0} />
+                  <linearGradient id="histUploadGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.35} />
+                    <stop offset="40%" stopColor="#38BDF8" stopOpacity={0.16} />
+                    <stop offset="80%" stopColor="#06B6D4" stopOpacity={0.04} />
+                    <stop offset="100%" stopColor="#06B6D4" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                <CartesianGrid strokeDasharray="2 4" stroke="var(--border-subtle)" opacity={0.6} vertical={false} />
                 <XAxis
                   dataKey="time"
                   stroke="var(--text-dim)"
@@ -169,37 +177,30 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   stroke="var(--text-dim)"
                   fontSize={10}
                   tickLine={false}
-                  tickFormatter={formatSpeed}
+                  tickFormatter={(val) => formatSpeedReadable(Number(val), 'bytes')}
                   width={75}
                 />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    borderColor: 'var(--border-subtle)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: 'var(--text-main)',
-                  }}
-                  formatter={(val: any, name: any) => [
-                    formatSpeed(Number(val) || 0),
-                    name === 'download' ? 'Download' : 'Upload',
-                  ]}
+                  content={<ChartTooltip speedUnit="bytes" />}
+                  cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
                 <Area
                   type="monotone"
                   dataKey="download"
-                  stroke="var(--chart-rx)"
-                  strokeWidth={1.5}
+                  stroke="#F97316"
+                  strokeWidth={2.2}
+                  filter="url(#histGlowOrange)"
                   fillOpacity={1}
-                  fill="url(#histDownload)"
+                  fill="url(#histDownloadGlowing)"
                 />
                 <Area
                   type="monotone"
                   dataKey="upload"
-                  stroke="var(--chart-tx)"
-                  strokeWidth={1.5}
+                  stroke="#06B6D4"
+                  strokeWidth={2.2}
+                  filter="url(#histGlowCyan)"
                   fillOpacity={1}
-                  fill="url(#histUpload)"
+                  fill="url(#histUploadGlowing)"
                 />
               </AreaChart>
             </ResponsiveContainer>

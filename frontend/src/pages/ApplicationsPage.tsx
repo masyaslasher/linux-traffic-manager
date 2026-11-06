@@ -10,6 +10,8 @@ import {
 import { Card } from '../components/common/Card';
 import { EmptyState } from '../components/common/EmptyState';
 import { Input } from '../components/common/Input';
+import { AppIcon } from '../components/common/AppIcon';
+import { useI18n } from '../i18n';
 import { ProcessAppSummary } from '../types';
 
 interface ApplicationsPageProps {
@@ -17,6 +19,7 @@ interface ApplicationsPageProps {
 }
 
 export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications }) => {
+  const { t } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedPid, setExpandedPid] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'connections' | 'name' | 'pid'>('connections');
@@ -42,11 +45,10 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
         <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-semibold text-text-primary">
-            Linux Socket-to-Process Attribution
+            {t.processNoticeTitle}
           </p>
           <p className="text-text-muted leading-relaxed">
-            LTM correlates active sockets to processes via Linux <code className="text-primary font-mono bg-surface px-1 py-0.5 rounded border border-border text-[11px]">/proc/[pid]/fd</code> symlinks.
-            In compliance with our integrity policy, connection counts are not fabricated into estimated byte counts.
+            {t.processNoticeText}
           </p>
         </div>
       </div>
@@ -55,25 +57,25 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="w-80">
           <Input
-            placeholder="Filter by name, binary path, PID, user..."
+            placeholder={t.searchProcess}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="w-4 h-4" />}
           />
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-text-muted">Sort by:</span>
+          <span className="text-text-muted">{t.sortBy}</span>
           {(['connections', 'name', 'pid'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setSortBy(s)}
               className={`px-2.5 py-1 rounded text-xs capitalize transition-colors ${
                 sortBy === s
-                  ? 'bg-primary text-white font-semibold'
+                  ? 'bg-primary text-white font-semibold shadow-sm'
                   : 'bg-surface border border-border text-text-muted hover:text-text-primary'
               }`}
             >
-              {s}
+              {s === 'connections' ? t.totalSockets : s === 'name' ? t.processName : t.pid}
             </button>
           ))}
           <span className="text-text-dim font-mono ml-2">
@@ -99,13 +101,13 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
-                  <th className="pb-2.5 pl-2">Application / Process</th>
-                  <th className="pb-2.5">PID</th>
-                  <th className="pb-2.5">User</th>
-                  <th className="pb-2.5 text-center">TCP Sockets</th>
-                  <th className="pb-2.5 text-center">UDP Sockets</th>
-                  <th className="pb-2.5 text-center">Total Sockets</th>
-                  <th className="pb-2.5 pr-2 text-right">Details</th>
+                  <th className="pb-2.5 pl-2">{t.processName}</th>
+                  <th className="pb-2.5">{t.pid}</th>
+                  <th className="pb-2.5">{t.user}</th>
+                  <th className="pb-2.5 text-center">{t.tcpSockets}</th>
+                  <th className="pb-2.5 text-center">{t.udpSockets}</th>
+                  <th className="pb-2.5 text-center">{t.totalSockets}</th>
+                  <th className="pb-2.5 pr-2 text-right">{t.details}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40 text-xs font-mono">
@@ -118,12 +120,13 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
                         className="hover:bg-surface-secondary/40 transition-colors cursor-pointer group"
                       >
                         <td className="py-2.5 pl-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2.5">
                             {isExpanded ? (
                               <ChevronDown className="w-3.5 h-3.5 text-primary" />
                             ) : (
                               <ChevronRight className="w-3.5 h-3.5 text-text-dim" />
                             )}
+                            <AppIcon name={app.name} path={app.executable_path} size="md" />
                             <div className="overflow-hidden">
                               <div className="font-sans font-semibold text-text-primary truncate max-w-[220px]">
                                 {app.name}
@@ -143,15 +146,15 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
                             {app.user}
                           </span>
                         </td>
-                        <td className="py-2.5 text-center text-primary">{app.tcp_count}</td>
-                        <td className="py-2.5 text-center text-secondary">{app.udp_count}</td>
+                        <td className="py-2.5 text-center text-primary font-semibold">{app.tcp_count}</td>
+                        <td className="py-2.5 text-center text-cyan-400 font-semibold">{app.udp_count}</td>
                         <td className="py-2.5 text-center font-bold text-text-primary">
                           <span className="px-2 py-0.5 rounded-full bg-surface-secondary border border-border text-[11px]">
                             {app.connection_count}
                           </span>
                         </td>
                         <td className="py-2.5 pr-2 text-right font-sans">
-                          <span className="text-[10px] text-text-dim">
+                          <span className="text-[10px] text-text-dim group-hover:text-primary transition-colors">
                             {isExpanded ? 'Collapse' : 'Inspect'}
                           </span>
                         </td>
@@ -164,7 +167,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
                             <div className="space-y-1.5">
                               <div className="text-[10px] uppercase font-semibold text-text-muted flex items-center gap-1.5">
                                 <Globe className="w-3 h-3 text-primary" />
-                                Active Remote Destinations:
+                                {t.remoteDestinations}
                               </div>
                               {app.remote_endpoints && app.remote_endpoints.length > 0 ? (
                                 <div className="flex flex-wrap gap-1.5">

@@ -20,6 +20,9 @@ import {
 import { Badge } from '../components/common/Badge';
 import { Card } from '../components/common/Card';
 import { StatCard } from '../components/common/StatCard';
+import { AppIcon } from '../components/common/AppIcon';
+import { ChartTooltip, formatSpeedReadable } from '../components/common/ChartTooltip';
+import { useI18n } from '../i18n';
 import {
   DiagnosticReport,
   NetworkConnection,
@@ -54,22 +57,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   speedUnit,
   onToggleSpeedUnit,
 }) => {
+  const { t } = useI18n();
+
   const activeInterface =
     interfaces.find((i) => i.name === selectedInterface) ||
     interfaces.find((i) => !i.is_loopback && i.is_up) ||
     interfaces[0];
-
-  const formatChartSpeed = (val: number): string => {
-    if (speedUnit === 'bits') {
-      const bits = val * 8;
-      if (bits < 1000) return `${bits.toFixed(0)} b/s`;
-      if (bits < 1_000_000) return `${(bits / 1000).toFixed(0)} Kb/s`;
-      return `${(bits / 1_000_000).toFixed(1)} Mb/s`;
-    }
-    if (val < 1024) return `${val.toFixed(0)} B/s`;
-    if (val < 1024 * 1024) return `${(val / 1024).toFixed(0)} KB/s`;
-    return `${(val / (1024 * 1024)).toFixed(1)} MB/s`;
-  };
 
   const chartData = historyPoints.map((p) => ({
     time: new Date(p.timestamp * 1000).toLocaleTimeString([], {
@@ -95,28 +88,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Primary KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label={`Download (${speedUnit === 'bits' ? 'bit/s' : 'B/s'})`}
+          label={`${t.download} (${speedUnit === 'bits' ? 'bit/s' : 'B/s'})`}
           value={rxDisplaySpeed}
-          subvalue={`Total: ${speedMetrics?.rx_total_human ?? '0 B'}`}
-          icon={<ArrowDown className="w-4 h-4" />}
+          subvalue={`${t.totalTraffic}: ${speedMetrics?.rx_total_human ?? '0 B'}`}
+          icon={<ArrowDown className="w-4 h-4 text-orange-400" />}
           color="primary"
         />
         <StatCard
-          label={`Upload (${speedUnit === 'bits' ? 'bit/s' : 'B/s'})`}
+          label={`${t.upload} (${speedUnit === 'bits' ? 'bit/s' : 'B/s'})`}
           value={txDisplaySpeed}
-          subvalue={`Total: ${speedMetrics?.tx_total_human ?? '0 B'}`}
-          icon={<ArrowUp className="w-4 h-4" />}
+          subvalue={`${t.totalTraffic}: ${speedMetrics?.tx_total_human ?? '0 B'}`}
+          icon={<ArrowUp className="w-4 h-4 text-cyan-400" />}
           color="secondary"
         />
         <StatCard
-          label="Active Sockets"
+          label={t.activeSockets}
           value={connections.length.toString()}
           subvalue={`${speedMetrics?.tcp_connections ?? 0} TCP • ${speedMetrics?.udp_connections ?? 0} UDP`}
           icon={<Network className="w-4 h-4" />}
           color="success"
         />
         <StatCard
-          label="Primary Adapter"
+          label={t.primaryAdapter}
           value={activeInterface ? String(activeInterface.name) : 'None'}
           subvalue={
             activeInterface?.ip_addresses[0] ??
@@ -127,48 +120,64 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         />
       </div>
 
-      {/* Real-time Traffic Graph */}
+      {/* Real-time Glowing Traffic Graph */}
       <Card
-        title="Real-Time Network Activity"
-        subtitle="Live 1-second rolling delta • Kernel socket counters"
+        title={t.realTimeActivity}
+        subtitle={t.realTimeSubtitle}
         action={
           <div className="flex items-center gap-4 text-xs font-mono">
             <button
               onClick={onToggleSpeedUnit}
-              className="px-2 py-0.5 rounded bg-surface-secondary border border-border text-[11px] text-text-secondary hover:text-text-primary transition-colors"
+              className="px-2.5 py-1 rounded-md bg-surface-secondary border border-border text-[11px] text-text-secondary hover:text-text-primary hover:border-primary/40 transition-colors shadow-sm"
             >
-              Unit: <strong className="text-primary">{speedUnit === 'bits' ? 'bit/s' : 'B/s'}</strong>
+              {t.unit}: <strong className="text-primary">{speedUnit === 'bits' ? 'bit/s' : 'B/s'}</strong>
             </button>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-text-secondary">Download</span>
+              <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+              <span className="text-text-secondary">{t.download}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-text-secondary">Upload</span>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+              <span className="text-text-secondary">{t.upload}</span>
             </div>
           </div>
         }
       >
-        <div className="h-64 w-full pt-2">
+        <div className="h-72 w-full pt-2">
           {chartData.length === 0 ? (
             <div className="h-full flex items-center justify-center text-text-muted text-xs">
               Initializing live traffic stream...
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="downloadArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-rx)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--chart-rx)" stopOpacity={0.0} />
+                  {/* Neon Glow Drop Shadows */}
+                  <filter id="glowOrange" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="#F97316" floodOpacity="0.7" />
+                  </filter>
+                  <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="#06B6D4" floodOpacity="0.7" />
+                  </filter>
+
+                  {/* Multi-stop Glowing Orange Fill */}
+                  <linearGradient id="downloadAreaGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#F97316" stopOpacity={0.45} />
+                    <stop offset="35%" stopColor="#FB923C" stopOpacity={0.22} />
+                    <stop offset="70%" stopColor="#F97316" stopOpacity={0.06} />
+                    <stop offset="100%" stopColor="#F97316" stopOpacity={0.0} />
                   </linearGradient>
-                  <linearGradient id="uploadArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-tx)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--chart-tx)" stopOpacity={0.0} />
+
+                  {/* Multi-stop Glowing Cyan Fill */}
+                  <linearGradient id="uploadAreaGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.40} />
+                    <stop offset="35%" stopColor="#38BDF8" stopOpacity={0.20} />
+                    <stop offset="70%" stopColor="#06B6D4" stopOpacity={0.05} />
+                    <stop offset="100%" stopColor="#06B6D4" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+
+                <CartesianGrid strokeDasharray="2 4" stroke="var(--border-subtle)" opacity={0.6} vertical={false} />
                 <XAxis
                   dataKey="time"
                   stroke="var(--text-dim)"
@@ -179,38 +188,31 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   stroke="var(--text-dim)"
                   fontSize={10}
                   tickLine={false}
-                  tickFormatter={formatChartSpeed}
-                  width={68}
+                  tickFormatter={(val) => formatSpeedReadable(Number(val), speedUnit)}
+                  width={72}
                 />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    borderColor: 'var(--border-subtle)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: 'var(--text-main)',
-                  }}
-                  formatter={(value: any, name: any) => [
-                    formatChartSpeed(Number(value) || 0),
-                    name === 'download' ? 'Download' : 'Upload',
-                  ]}
+                  content={<ChartTooltip speedUnit={speedUnit} />}
+                  cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
                 <Area
                   type="monotone"
                   dataKey="download"
-                  stroke="var(--chart-rx)"
-                  strokeWidth={1.5}
+                  stroke="#F97316"
+                  strokeWidth={2.4}
+                  filter="url(#glowOrange)"
                   fillOpacity={1}
-                  fill="url(#downloadArea)"
+                  fill="url(#downloadAreaGlowing)"
                   isAnimationActive={false}
                 />
                 <Area
                   type="monotone"
                   dataKey="upload"
-                  stroke="var(--chart-tx)"
-                  strokeWidth={1.5}
+                  stroke="#06B6D4"
+                  strokeWidth={2.4}
+                  filter="url(#glowCyan)"
                   fillOpacity={1}
-                  fill="url(#uploadArea)"
+                  fill="url(#uploadAreaGlowing)"
                   isAnimationActive={false}
                 />
               </AreaChart>
@@ -226,7 +228,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
             <h4 className="text-xs font-semibold text-text-primary flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary" />
-              Network Health & Status
+              {t.networkHealth}
             </h4>
             <span
               className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
@@ -235,36 +237,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   : 'bg-warning/15 text-warning'
               }`}
             >
-              {diagnosticReport?.network_status || 'Online'}
+              {diagnosticReport?.network_status || t.online}
             </span>
           </div>
 
           <div className="space-y-2 text-xs font-mono">
             <div className="flex justify-between p-2 rounded bg-surface-secondary border border-border/40">
-              <span className="text-text-muted font-sans">Default Gateway:</span>
+              <span className="text-text-muted font-sans">{t.defaultGateway}:</span>
               <span className="text-text-primary">
                 {diagnosticReport?.gateway?.gateway_ip || activeInterface?.gateway || '192.168.0.1'}
               </span>
             </div>
 
             <div className="flex justify-between p-2 rounded bg-surface-secondary border border-border/40">
-              <span className="text-text-muted font-sans">DNS Response Latency:</span>
+              <span className="text-text-muted font-sans">{t.dnsLatency}:</span>
               <span className="text-primary font-bold">
                 {diagnosticReport?.dns_latency_ms ? `${diagnosticReport.dns_latency_ms.toFixed(1)} ms` : '18.4 ms'}
               </span>
             </div>
 
             <div className="flex justify-between p-2 rounded bg-surface-secondary border border-border/40">
-              <span className="text-text-muted font-sans">Average Ping (RTT):</span>
+              <span className="text-text-muted font-sans">{t.avgPing}:</span>
               <span className="text-success font-bold">
                 {diagnosticReport?.average_latency_ms ? `${diagnosticReport.average_latency_ms.toFixed(1)} ms` : '24.2 ms'}
               </span>
             </div>
 
             <div className="flex justify-between p-2 rounded bg-surface-secondary border border-border/40">
-              <span className="text-text-muted font-sans">Observed Packet Loss:</span>
-              <span className="text-text-secondary">
-                {diagnosticReport?.packet_loss_percent ? `${diagnosticReport.packet_loss_percent.toFixed(0)}%` : '0%'}
+              <span className="text-text-muted font-sans">{t.packetLoss}:</span>
+              <span className="text-text-primary">
+                {diagnosticReport?.packet_loss_percent ? `${diagnosticReport.packet_loss_percent.toFixed(1)}%` : '0.0%'}
               </span>
             </div>
           </div>
@@ -275,10 +277,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
             <h4 className="text-xs font-semibold text-text-primary flex items-center gap-2">
               <Cpu className="w-4 h-4 text-primary" />
-              Active Network Processes
+              {t.topProcesses}
             </h4>
             <span className="text-[11px] text-text-muted font-mono">
-              {applications.length} processes identified
+              {applications.length} processes
             </span>
           </div>
 
@@ -286,19 +288,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-border text-text-muted text-[11px]">
-                  <th className="pb-1.5 font-medium">Application</th>
-                  <th className="pb-1.5 font-medium">PID</th>
-                  <th className="pb-1.5 font-medium">User</th>
-                  <th className="pb-1.5 font-medium text-center">Sockets</th>
+                  <th className="pb-1.5 font-medium">{t.processName}</th>
+                  <th className="pb-1.5 font-medium">{t.pid}</th>
+                  <th className="pb-1.5 font-medium">{t.user}</th>
+                  <th className="pb-1.5 font-medium text-center">{t.totalSockets}</th>
                   <th className="pb-1.5 font-medium">Attribution</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40 font-mono">
-                {applications.slice(0, 5).map((app) => (
-                  <tr key={app.pid} className="hover:bg-surface-secondary/50">
-                    <td className="py-2 font-sans font-semibold text-text-primary flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      {app.name}
+                {applications.slice(0, 6).map((app) => (
+                  <tr key={app.pid} className="hover:bg-surface-secondary/50 transition-colors">
+                    <td className="py-2 font-sans font-semibold text-text-primary flex items-center gap-2.5">
+                      <AppIcon name={app.name} path={app.executable_path} size="sm" />
+                      <span className="truncate max-w-[160px]">{app.name}</span>
                     </td>
                     <td className="py-2 text-text-muted">{app.pid}</td>
                     <td className="py-2 text-text-secondary font-sans">{app.user}</td>
@@ -318,7 +320,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
       {/* Network Interfaces Overview Grid */}
       <Card
-        title="Network Adapters"
+        title={t.networkAdapters}
         subtitle="Physical and virtual Linux kernel network adapters"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-1">
@@ -332,7 +334,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 }
                 className={`p-3.5 rounded-lg border cursor-pointer transition-colors ${
                   isSelected
-                    ? 'bg-surface-secondary border-primary/50'
+                    ? 'bg-surface-secondary border-primary/50 shadow-sm'
                     : 'bg-surface-secondary/40 border-border hover:border-border/80'
                 }`}
               >

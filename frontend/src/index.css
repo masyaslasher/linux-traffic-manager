@@ -3,121 +3,121 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------- */
-/* Theme Definitions: Minimal Flat Desktop UI           */
+/* Theme Definitions: Modern Warm Orange & AMOLED Theme */
 /* ---------------------------------------------------- */
 
 :root,
 body.theme-dark {
-  --bg-app: #111318;
-  --bg-surface: #171922;
-  --bg-surface-elevated: #1F222E;
-  --bg-surface-hover: #262A38;
-  --border-subtle: #272B38;
+  --bg-app: #101114;
+  --bg-surface: #17181F;
+  --bg-surface-elevated: #1F212A;
+  --bg-surface-hover: #282B36;
+  --border-subtle: #292D38;
   --text-main: #F3F4F6;
   --text-muted: #9CA3AF;
   --text-dim: #6B7280;
-  --accent: #6366F1;
-  --accent-hover: #4F46E5;
-  --accent-subtle: rgba(99, 102, 241, 0.12);
+  --accent: #F97316;
+  --accent-hover: #EA580C;
+  --accent-subtle: rgba(249, 115, 22, 0.14);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
-  --chart-rx: #6366F1;
-  --chart-tx: #EC4899;
+  --chart-rx: #F97316;
+  --chart-tx: #06B6D4;
 }
 
 body.theme-amoled {
   --bg-app: #000000;
-  --bg-surface: #09090D;
-  --bg-surface-elevated: #111117;
-  --bg-surface-hover: #181822;
-  --border-subtle: #1C1C26;
+  --bg-surface: #0A0A0C;
+  --bg-surface-elevated: #121316;
+  --bg-surface-hover: #1A1B20;
+  --border-subtle: #1E2028;
   --text-main: #F9FAFB;
   --text-muted: #94A3B8;
   --text-dim: #64748B;
-  --accent: #818CF8;
-  --accent-hover: #6366F1;
-  --accent-subtle: rgba(129, 140, 248, 0.12);
+  --accent: #FB923C;
+  --accent-hover: #F97316;
+  --accent-subtle: rgba(251, 146, 60, 0.16);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
-  --chart-rx: #818CF8;
-  --chart-tx: #F43F5E;
+  --chart-rx: #FB923C;
+  --chart-tx: #22D3EE;
 }
 
 body.theme-light {
-  --bg-app: #F8FAFC;
+  --bg-app: #FFFBF7;
   --bg-surface: #FFFFFF;
-  --bg-surface-elevated: #F1F5F9;
-  --bg-surface-hover: #E2E8F0;
-  --border-subtle: #E2E8F0;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-dim: #94A3B8;
-  --accent: #4F46E5;
-  --accent-hover: #4338CA;
-  --accent-subtle: rgba(79, 70, 229, 0.08);
+  --bg-surface-elevated: #F8F5F1;
+  --bg-surface-hover: #F1ECE5;
+  --border-subtle: #E8E2D9;
+  --text-main: #18181B;
+  --text-muted: #52525B;
+  --text-dim: #71717A;
+  --accent: #EA580C;
+  --accent-hover: #C2410C;
+  --accent-subtle: rgba(234, 88, 12, 0.10);
   --success: #059669;
   --warning: #D97706;
   --error: #DC2626;
-  --chart-rx: #4F46E5;
-  --chart-tx: #DB2777;
+  --chart-rx: #EA580C;
+  --chart-tx: #0284C7;
 }
 
 body.theme-graphite {
-  --bg-app: #18181B;
-  --bg-surface: #202024;
-  --bg-surface-elevated: #27272D;
-  --bg-surface-hover: #31313A;
-  --border-subtle: #2C2C35;
+  --bg-app: #151517;
+  --bg-surface: #1E1E22;
+  --bg-surface-elevated: #26262B;
+  --bg-surface-hover: #303036;
+  --border-subtle: #2C2C33;
   --text-main: #F4F4F5;
   --text-muted: #A1A1AA;
   --text-dim: #71717A;
-  --accent: #38BDF8;
-  --accent-hover: #0284C7;
-  --accent-subtle: rgba(56, 189, 248, 0.12);
+  --accent: #F97316;
+  --accent-hover: #EA580C;
+  --accent-subtle: rgba(249, 115, 22, 0.14);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
-  --chart-rx: #38BDF8;
-  --chart-tx: #F59E0B;
+  --chart-rx: #F97316;
+  --chart-tx: #38BDF8;
 }
 
 body.theme-slate {
   --bg-app: #0F172A;
-  --bg-surface: #1E293B;
-  --bg-surface-elevated: #283548;
-  --bg-surface-hover: #334155;
-  --border-subtle: #334155;
+  --bg-surface: #1B2433;
+  --bg-surface-elevated: #243044;
+  --bg-surface-hover: #2E3E56;
+  --border-subtle: #2E3E56;
   --text-main: #F8FAFC;
   --text-muted: #94A3B8;
   --text-dim: #64748B;
-  --accent: #38BDF8;
-  --accent-hover: #0EA5E9;
-  --accent-subtle: rgba(56, 189, 248, 0.12);
+  --accent: #FB923C;
+  --accent-hover: #F97316;
+  --accent-subtle: rgba(251, 146, 60, 0.14);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
-  --chart-rx: #38BDF8;
-  --chart-tx: #A855F7;
+  --chart-rx: #FB923C;
+  --chart-tx: #38BDF8;
 }
 
 body.theme-custom {
-  --bg-app: #131418;
-  --bg-surface: #1A1C22;
-  --bg-surface-elevated: #22252E;
-  --bg-surface-hover: #2B2F3B;
-  --border-subtle: #2B303C;
+  --bg-app: #121214;
+  --bg-surface: #191A1E;
+  --bg-surface-elevated: #212228;
+  --bg-surface-hover: #292B33;
+  --border-subtle: #292C36;
   --text-main: #ECEFF4;
   --text-muted: #98A2B3;
   --text-dim: #667085;
-  --accent: #8B5CF6;
-  --accent-hover: #7C3AED;
-  --accent-subtle: rgba(139, 92, 246, 0.12);
+  --accent: #F97316;
+  --accent-hover: #EA580C;
+  --accent-subtle: rgba(249, 115, 22, 0.14);
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
-  --chart-rx: #8B5CF6;
+  --chart-rx: #F97316;
   --chart-tx: #06B6D4;
 }
 

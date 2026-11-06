@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { AppIcon } from '../components/common/AppIcon';
+import { useI18n } from '../i18n';
 import { ProcessAppSummary, SpeedMetrics } from '../types';
 
 interface BandwidthPageProps {
@@ -21,6 +23,7 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
   applications,
   speedMetrics,
 }) => {
+  const { t } = useI18n();
   const [selectedProfile, setSelectedProfile] = useState<'standard' | 'gaming' | 'streaming' | 'throttled'>('standard');
   const [downloadLimitMbps, setDownloadLimitMbps] = useState('100');
   const [uploadLimitMbps, setUploadLimitMbps] = useState('50');
@@ -56,22 +59,22 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Overview Banner */}
-      <div className="bg-surface border border-border rounded-lg p-4">
+      <div className="bg-surface border border-border rounded-lg p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
               <Gauge className="w-4 h-4 text-primary" />
-              Bandwidth Management & Traffic Control
+              {t.bandwidthTitle}
             </h3>
             <p className="text-xs text-text-muted mt-0.5">
-              Inspect application socket utilization and configure Linux Traffic Control (tc / qdisc) profiles.
+              {t.bandwidthSubtitle}
             </p>
           </div>
           <div className="flex items-center gap-3 font-mono text-xs">
             <span className="text-text-muted">Current Rate:</span>
-            <span className="text-primary font-bold">{speedMetrics?.rx_speed_human || '0 B/s'}</span>
+            <span className="text-orange-400 font-bold">{speedMetrics?.rx_speed_human || '0 B/s'}</span>
             <span className="text-border">/</span>
-            <span className="text-secondary font-bold">{speedMetrics?.tx_speed_human || '0 B/s'}</span>
+            <span className="text-cyan-400 font-bold">{speedMetrics?.tx_speed_human || '0 B/s'}</span>
           </div>
         </div>
       </div>
@@ -82,7 +85,7 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
         <div className="space-y-1">
           <div className="font-semibold text-text-primary">System Traffic Control Architecture</div>
           <div className="text-text-muted leading-relaxed">
-            Linux controls traffic through kernel packet schedulers (<code className="px-1 py-0.5 rounded bg-surface border border-border text-primary font-mono text-[11px]">tc qdisc</code>) and <code className="px-1 py-0.5 rounded bg-surface border border-border text-primary font-mono text-[11px]">cgroup v2</code> network controllers. Per-process bandwidth throttling applies to unified cgroup slices with explicit administrator authorization. No hidden or destructive system changes are ever made without your verification.
+            {t.tcNotice}
           </div>
         </div>
       </div>
@@ -95,42 +98,38 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
             <div
               key={p.id}
               onClick={() => setSelectedProfile(p.id as any)}
-              className={`bg-surface border rounded-lg p-4 cursor-pointer transition-colors ${
+              className={`bg-surface border rounded-lg p-4 cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-primary bg-primary/5'
+                  ? 'border-primary ring-1 ring-primary/40 bg-primary/5 shadow-sm'
                   : 'border-border hover:border-border/80'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-md bg-surface-secondary border border-border">
-                    {p.icon}
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-text-primary">{p.name}</div>
-                    <div className="text-[11px] text-text-muted mt-0.5">{p.desc}</div>
-                  </div>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  {p.icon}
+                  <span className="font-semibold text-xs text-text-primary">{p.name}</span>
                 </div>
-                {isSelected && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+                {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
               </div>
+              <p className="text-xs text-text-muted leading-relaxed">{p.desc}</p>
             </div>
           );
         })}
       </div>
 
       {/* Manual Limit Configuration */}
-      <Card title="Traffic Shaping Parameters" subtitle="Specify link limits for selected profile">
+      <Card title="Traffic Ceiling Rate Limits" subtitle="Set upper egress boundaries for the active network interface">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">
-              Max Ingress (Download) Cap
+              Download Ingress Cap
             </label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
                 value={downloadLimitMbps}
                 onChange={(e) => setDownloadLimitMbps(e.target.value)}
-                className="w-full bg-surface-secondary border border-border rounded px-3 py-1.5 text-xs text-text-primary font-mono focus:outline-none focus:border-primary"
+                className="w-36 bg-surface-secondary border border-border rounded px-3 py-1.5 text-xs font-mono text-text-primary focus:outline-none"
               />
               <span className="text-xs font-mono text-text-muted">Mbps</span>
             </div>
@@ -138,14 +137,14 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
 
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">
-              Max Egress (Upload) Cap
+              Upload Egress Cap
             </label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
                 value={uploadLimitMbps}
                 onChange={(e) => setUploadLimitMbps(e.target.value)}
-                className="w-full bg-surface-secondary border border-border rounded px-3 py-1.5 text-xs text-text-primary font-mono focus:outline-none focus:border-primary"
+                className="w-36 bg-surface-secondary border border-border rounded px-3 py-1.5 text-xs font-mono text-text-primary focus:outline-none"
               />
               <span className="text-xs font-mono text-text-muted">Mbps</span>
             </div>
@@ -158,7 +157,7 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
             size="sm"
             onClick={() => setShowApplyModal(true)}
           >
-            Review & Apply Profile
+            {t.applyProfile}
           </Button>
         </div>
       </Card>
@@ -172,25 +171,25 @@ export const BandwidthPage: React.FC<BandwidthPageProps> = ({
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-border text-text-muted">
-                <th className="pb-2 font-medium">Process Name</th>
-                <th className="pb-2 font-medium">PID</th>
-                <th className="pb-2 font-medium">User</th>
-                <th className="pb-2 font-medium text-center">TCP Sockets</th>
-                <th className="pb-2 font-medium text-center">UDP Sockets</th>
+                <th className="pb-2 font-medium">{t.processName}</th>
+                <th className="pb-2 font-medium">{t.pid}</th>
+                <th className="pb-2 font-medium">{t.user}</th>
+                <th className="pb-2 font-medium text-center">{t.tcpSockets}</th>
+                <th className="pb-2 font-medium text-center">{t.udpSockets}</th>
                 <th className="pb-2 font-medium">Attribution Model</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 font-mono">
               {applications.slice(0, 10).map((app) => (
-                <tr key={app.pid} className="hover:bg-surface-secondary/50">
-                  <td className="py-2.5 font-sans font-semibold text-text-primary flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    {app.name}
+                <tr key={app.pid} className="hover:bg-surface-secondary/50 transition-colors">
+                  <td className="py-2.5 font-sans font-semibold text-text-primary flex items-center gap-2.5">
+                    <AppIcon name={app.name} path={app.executable_path} size="sm" />
+                    <span>{app.name}</span>
                   </td>
                   <td className="py-2.5 text-text-secondary">{app.pid}</td>
                   <td className="py-2.5 text-text-muted font-sans">{app.user}</td>
-                  <td className="py-2.5 text-center text-primary">{app.tcp_count}</td>
-                  <td className="py-2.5 text-center text-secondary">{app.udp_count}</td>
+                  <td className="py-2.5 text-center text-primary font-semibold">{app.tcp_count}</td>
+                  <td className="py-2.5 text-center text-cyan-400 font-semibold">{app.udp_count}</td>
                   <td className="py-2.5 font-sans">
                     <span className="px-2 py-0.5 rounded text-[10px] bg-surface-secondary text-text-muted border border-border">
                       {app.attribution_status}

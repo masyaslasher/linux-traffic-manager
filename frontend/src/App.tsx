@@ -12,6 +12,7 @@ import { HistoryPage } from './pages/HistoryPage';
 import { InterfacesPage } from './pages/InterfacesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { api } from './services/tauriClient';
+import { useI18n } from './i18n';
 import {
   AppAppearanceSettings,
   DiagnosticReport,
@@ -30,6 +31,7 @@ import {
 } from './types';
 
 export const App: React.FC = () => {
+  const { t } = useI18n();
   const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([]);
   const [selectedInterface, setSelectedInterface] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export const App: React.FC = () => {
       theme: 'dark',
       density: 'normal',
       speedUnit: 'bytes',
-      accentColor: '#6366F1',
+      accentColor: '#F97316',
       fontSize: 'normal',
       animations: true,
       borderRadius: 'small',
@@ -325,53 +327,53 @@ export const App: React.FC = () => {
     switch (currentTab) {
       case 'dashboard':
         return {
-          title: 'Network Dashboard 2.0',
-          description: 'Real-time bandwidth rates, active sockets, interface status, and activity charts',
+          title: t.dashboard,
+          description: t.realTimeSubtitle,
         };
       case 'applications':
         return {
-          title: 'Process Monitor',
-          description: 'Processes utilizing network sockets correlated via /proc/[pid]/fd descriptors',
+          title: t.applications,
+          description: t.processNoticeTitle,
         };
       case 'connections':
         return {
-          title: 'Connection Inspector',
-          description: 'Real-time TCP/UDP socket table with reverse DNS hostnames and endpoints',
+          title: t.connections,
+          description: 'TCP / UDP / RAW Sockets & Reverse DNS',
         };
       case 'interfaces':
         return {
-          title: 'Network Interface Manager',
-          description: 'Hardware adapters, MAC addresses, MTU, carrier states, DNS, and error statistics',
+          title: t.interfaces,
+          description: t.networkAdapters,
         };
       case 'analytics':
         return {
-          title: 'Network Analytics',
-          description: 'Interactive multi-series bandwidth graphs, peak rates, and interface breakdowns',
+          title: t.analytics,
+          description: t.totalTraffic,
         };
       case 'diagnostics':
         return {
-          title: 'Diagnostics Suite',
-          description: 'Automated gateway reachability, DNS latency, TCP port check, and path analysis',
+          title: t.diagnostics,
+          description: t.diagSubtitle,
         };
       case 'automation':
         return {
-          title: 'Automation Center',
-          description: 'WHEN / IF / THEN rule builder, alerting triggers, and event history',
+          title: t.automation,
+          description: t.automationSubtitle,
         };
       case 'bandwidth':
         return {
-          title: 'Bandwidth Control',
-          description: 'Traffic shaping profiles, application prioritization, and Linux tc qdisc models',
+          title: t.bandwidth,
+          description: t.bandwidthSubtitle,
         };
       case 'history':
         return {
-          title: 'History & Storage',
-          description: 'Persistent time-series SQLite logs, retention pruning, and CSV/JSON exporters',
+          title: t.history,
+          description: t.eventLogs,
         };
       case 'settings':
         return {
-          title: 'Settings Center',
-          description: 'Appearance themes, polling rates, profiles, privacy, and Linux capabilities',
+          title: t.settings,
+          description: t.appearanceTitle,
         };
     }
   };

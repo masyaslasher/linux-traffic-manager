@@ -8,6 +8,7 @@ import { Badge } from '../components/common/Badge';
 import { Card } from '../components/common/Card';
 import { EmptyState } from '../components/common/EmptyState';
 import { Input } from '../components/common/Input';
+import { AppIcon } from '../components/common/AppIcon';
 import { NetworkConnection, Protocol, SocketState } from '../types';
 
 interface ConnectionsPageProps {
@@ -223,7 +224,8 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({ connections })
                     </td>
                     <td className="py-3 font-sans">
                       {conn.process_name ? (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <AppIcon name={conn.process_name} size="xs" />
                           <span className="font-semibold text-text-primary">
                             {conn.process_name}
                           </span>
@@ -232,9 +234,12 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({ connections })
                           </span>
                         </div>
                       ) : (
-                        <span className="text-text-muted text-xs italic">
-                          System / Kernel
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <AppIcon name="kernel" size="xs" />
+                          <span className="text-text-muted text-xs italic">
+                            System / Kernel
+                          </span>
+                        </div>
                       )}
                     </td>
                     <td className="py-3 pr-2 text-right text-text-muted text-[11px]">

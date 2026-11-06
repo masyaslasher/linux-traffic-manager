@@ -11,6 +11,8 @@ import {
 import { Download, FileJson } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { ChartTooltip } from '../components/common/ChartTooltip';
+import { useI18n } from '../i18n';
 import { NetworkInterface, SpeedMetrics, StoredTrafficSample } from '../types';
 
 interface AnalyticsPageProps {
@@ -32,6 +34,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   onExportCsv,
   onExportJson,
 }) => {
+  const { t } = useI18n();
   const [activeSeries, setActiveSeries] = useState<{ rx: boolean; tx: boolean }>({
     rx: true,
     tx: true,
@@ -43,8 +46,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       minute: '2-digit',
       second: '2-digit',
     }),
-    download_mb: parseFloat((s.rx_speed_bps / (1024 * 1024)).toFixed(2)),
-    upload_mb: parseFloat((s.tx_speed_bps / (1024 * 1024)).toFixed(2)),
+    download: s.rx_speed_bps,
+    upload: s.tx_speed_bps,
   }));
 
   const ranges: ('5m' | '15m' | '1h' | '6h' | '24h' | '7d' | '30d')[] = [
@@ -60,7 +63,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Controls Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-surface p-4 border border-border rounded-lg">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-surface p-4 border border-border rounded-lg shadow-sm">
         <div className="flex items-center gap-1.5 bg-surface-secondary p-1 rounded-md border border-border">
           {ranges.map((r) => (
             <button
@@ -68,7 +71,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
               onClick={() => onSelectRange(r)}
               className={`px-3 py-1 rounded text-xs font-mono transition-colors ${
                 selectedRange === r
-                  ? 'bg-primary text-white font-semibold'
+                  ? 'bg-primary text-white font-semibold shadow-sm'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
             >
@@ -91,10 +94,10 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
 
       {/* Main Bandwidth Analytics Graph */}
       <Card
-        title="Network Bandwidth Analytics"
+        title={t.analytics}
         subtitle={`Historical transfer speeds over ${selectedRange}`}
         action={
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-4 text-xs font-mono">
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -104,7 +107,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 }
                 className="rounded border-border text-primary focus:ring-0"
               />
-              <span className="text-primary font-medium">Download (MB/s)</span>
+              <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.8)]" />
+              <span className="text-orange-400 font-medium">{t.download}</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -115,7 +119,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 }
                 className="rounded border-border text-secondary focus:ring-0"
               />
-              <span className="text-secondary font-medium">Upload (MB/s)</span>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+              <span className="text-cyan-400 font-medium">{t.upload}</span>
             </label>
           </div>
         }
@@ -123,52 +128,67 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
         <div className="h-72 w-full mt-4">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="analyticsRx" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-rx)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--chart-rx)" stopOpacity={0.0} />
+                  <filter id="glowOrangeAnalytics" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#F97316" floodOpacity="0.6" />
+                  </filter>
+                  <filter id="glowCyanAnalytics" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06B6D4" floodOpacity="0.6" />
+                  </filter>
+                  <linearGradient id="analyticsRxGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#F97316" stopOpacity={0.4} />
+                    <stop offset="40%" stopColor="#FB923C" stopOpacity={0.18} />
+                    <stop offset="80%" stopColor="#F97316" stopOpacity={0.04} />
+                    <stop offset="100%" stopColor="#F97316" stopOpacity={0.0} />
                   </linearGradient>
-                  <linearGradient id="analyticsTx" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-tx)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--chart-tx)" stopOpacity={0.0} />
+                  <linearGradient id="analyticsTxGlowing" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.35} />
+                    <stop offset="40%" stopColor="#38BDF8" stopOpacity={0.16} />
+                    <stop offset="80%" stopColor="#06B6D4" stopOpacity={0.04} />
+                    <stop offset="100%" stopColor="#06B6D4" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.6} />
-                <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="2 4" stroke="var(--border-subtle)" opacity={0.6} />
+                <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={10} tickLine={false} />
                 <YAxis
                   stroke="var(--text-dim)"
-                  fontSize={11}
+                  fontSize={10}
                   tickLine={false}
-                  unit=" MB/s"
+                  tickFormatter={(val) => {
+                    const mb = Number(val) / (1024 * 1024);
+                    return mb < 1 ? `${(Number(val) / 1024).toFixed(0)} KB/s` : `${mb.toFixed(1)} MB/s`;
+                  }}
+                  width={72}
                 />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    borderColor: 'var(--border-subtle)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: 'var(--text-main)',
-                  }}
+                  content={<ChartTooltip speedUnit="bytes" />}
+                  cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
                 {activeSeries.rx && (
                   <Area
                     type="monotone"
-                    dataKey="download_mb"
+                    dataKey="download"
                     name="Download"
-                    stroke="var(--chart-rx)"
-                    strokeWidth={1.5}
-                    fill="url(#analyticsRx)"
+                    stroke="#F97316"
+                    strokeWidth={2.2}
+                    filter="url(#glowOrangeAnalytics)"
+                    fillOpacity={1}
+                    fill="url(#analyticsRxGlowing)"
+                    isAnimationActive={false}
                   />
                 )}
                 {activeSeries.tx && (
                   <Area
                     type="monotone"
-                    dataKey="upload_mb"
+                    dataKey="upload"
                     name="Upload"
-                    stroke="var(--chart-tx)"
-                    strokeWidth={1.5}
-                    fill="url(#analyticsTx)"
+                    stroke="#06B6D4"
+                    strokeWidth={2.2}
+                    filter="url(#glowCyanAnalytics)"
+                    fillOpacity={1}
+                    fill="url(#analyticsTxGlowing)"
+                    isAnimationActive={false}
                   />
                 )}
               </AreaChart>
@@ -184,7 +204,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       {/* Metrics Aggregate Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-surface border border-border rounded-lg p-4">
-          <div className="text-xs text-text-muted">Peak Download</div>
+          <div className="text-xs text-text-muted">{t.peakDownload}</div>
           <div className="text-xl font-bold font-mono text-primary mt-1">
             {speedMetrics?.peak_rx_speed_human || '0 B/s'}
           </div>
@@ -193,8 +213,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           </div>
         </div>
         <div className="bg-surface border border-border rounded-lg p-4">
-          <div className="text-xs text-text-muted">Peak Upload</div>
-          <div className="text-xl font-bold font-mono text-secondary mt-1">
+          <div className="text-xs text-text-muted">{t.peakUpload}</div>
+          <div className="text-xl font-bold font-mono text-cyan-400 mt-1">
             {speedMetrics?.peak_tx_speed_human || '0 B/s'}
           </div>
           <div className="text-[11px] text-text-dim mt-0.5 font-mono">
@@ -202,14 +222,14 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           </div>
         </div>
         <div className="bg-surface border border-border rounded-lg p-4">
-          <div className="text-xs text-text-muted">Session Average Rate</div>
+          <div className="text-xs text-text-muted">{t.sessionAverage}</div>
           <div className="text-xl font-bold font-mono text-text-primary mt-1">
             {speedMetrics?.avg_rx_speed_human || '0 B/s'}
           </div>
           <div className="text-[11px] text-text-dim mt-0.5">Rolling geometric mean</div>
         </div>
         <div className="bg-surface border border-border rounded-lg p-4">
-          <div className="text-xs text-text-muted">Connection Duration</div>
+          <div className="text-xs text-text-muted">{t.connectionUptime}</div>
           <div className="text-xl font-bold font-mono text-success mt-1">
             {Math.floor((speedMetrics?.connection_uptime_secs || 0) / 60)}m{' '}
             {(speedMetrics?.connection_uptime_secs || 0) % 60}s
@@ -219,7 +239,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       </div>
 
       {/* Interface Traffic Distribution Table */}
-      <Card title="Traffic by Network Adapter" subtitle="Kernel byte counters per interface">
+      <Card title={t.networkAdapters} subtitle="Kernel byte counters per interface">
         <div className="overflow-x-auto mt-2">
           <table className="w-full text-left text-xs">
             <thead>
@@ -227,8 +247,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 <th className="pb-2 font-medium">Interface</th>
                 <th className="pb-2 font-medium">State</th>
                 <th className="pb-2 font-medium">Link Speed</th>
-                <th className="pb-2 font-medium font-mono text-right">Received (RX)</th>
-                <th className="pb-2 font-medium font-mono text-right">Transmitted (TX)</th>
+                <th className="pb-2 font-medium font-mono text-right">{t.download}</th>
+                <th className="pb-2 font-medium font-mono text-right">{t.upload}</th>
                 <th className="pb-2 font-medium font-mono text-right">Packets</th>
               </tr>
             </thead>
@@ -258,10 +278,10 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                   <td className="py-2.5 text-text-secondary">
                     {iface.speed_mbps ? `${iface.speed_mbps} Mbps` : 'Adaptive'}
                   </td>
-                  <td className="py-2.5 text-right text-primary">
+                  <td className="py-2.5 text-right text-primary font-bold">
                     {(iface.rx_bytes / (1024 * 1024)).toFixed(1)} MB
                   </td>
-                  <td className="py-2.5 text-right text-secondary">
+                  <td className="py-2.5 text-right text-cyan-400 font-bold">
                     {(iface.tx_bytes / (1024 * 1024)).toFixed(1)} MB
                   </td>
                   <td className="py-2.5 text-right text-text-muted">

@@ -8,6 +8,8 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { SpeedMetrics, SpeedUnit } from '../../types';
+import { LanguageSelector } from '../common/LanguageSelector';
+import { useI18n } from '../../i18n';
 
 interface HeaderProps {
   title: string;
@@ -36,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   alertCount = 0,
   onOpenAlerts,
 }) => {
+  const { t } = useI18n();
+
   const rxDisplay =
     speedUnit === 'bits'
       ? speedMetrics?.rx_speed_bits_human || '0 bit/s'
@@ -53,11 +57,14 @@ export const Header: React.FC<HeaderProps> = ({
         <p className="text-[11px] text-text-muted">{description}</p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
+        {/* Language Switcher (Reactive without reload) */}
+        <LanguageSelector />
+
         {/* Active Profile Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-secondary border border-border text-xs">
+        <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-secondary border border-border text-xs">
           <UserCheck className="w-3.5 h-3.5 text-primary" />
-          <span className="text-text-muted text-[11px]">Profile:</span>
+          <span className="text-text-muted text-[11px]">{t.profile}:</span>
           <span className="font-semibold text-text-primary text-[11px]">{activeProfileName}</span>
         </div>
 
@@ -65,15 +72,15 @@ export const Header: React.FC<HeaderProps> = ({
         {speedMetrics && (
           <div
             onClick={onToggleSpeedUnit}
-            title="Click to toggle between Bytes/s and Bits/s"
-            className="flex items-center gap-2.5 px-2.5 py-1 bg-surface-secondary border border-border rounded-md text-xs font-mono cursor-pointer hover:border-primary/40 transition-colors"
+            title={`${t.unit}: ${speedUnit === 'bits' ? 'bit/s' : 'B/s'}`}
+            className="flex items-center gap-2.5 px-2.5 py-1 bg-surface-secondary border border-border rounded-md text-xs font-mono cursor-pointer hover:border-primary/50 transition-colors"
           >
-            <div className="flex items-center gap-1 text-primary">
+            <div className="flex items-center gap-1 text-orange-400">
               <ArrowDown className="w-3.5 h-3.5" />
               <span>{rxDisplay}</span>
             </div>
             <div className="w-px h-3 bg-border" />
-            <div className="flex items-center gap-1 text-secondary">
+            <div className="flex items-center gap-1 text-cyan-400">
               <ArrowUp className="w-3.5 h-3.5" />
               <span>{txDisplay}</span>
             </div>
@@ -84,8 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
         {onOpenCommandPalette && (
           <button
             onClick={onOpenCommandPalette}
-            title="Search / Command Palette (Ctrl+K)"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-secondary border border-border text-xs text-text-muted hover:text-text-primary hover:border-primary/40 transition-colors"
+            title={`${t.commandPalette} (Ctrl+K)`}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-secondary border border-border text-xs text-text-muted hover:text-text-primary hover:border-primary/50 transition-colors"
           >
             <Search className="w-3.5 h-3.5" />
             <kbd className="text-[9px] font-mono px-1 py-0.5 rounded bg-surface border border-border/80">
@@ -99,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenAlerts}
             title={`${alertCount} alert(s)`}
-            className="relative p-1.5 text-text-muted hover:text-text-primary bg-surface-secondary rounded-md border border-border transition-colors"
+            className="relative p-1.5 text-text-muted hover:text-text-primary bg-surface-secondary rounded-md border border-border hover:border-primary/40 transition-colors"
           >
             <Bell className="w-3.5 h-3.5" />
             {alertCount > 0 && (
@@ -113,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            title="Refresh system data"
+            title={t.refresh}
             className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-md border border-border transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
