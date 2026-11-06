@@ -172,11 +172,9 @@ impl MonitorState {
                                             alert_msg = format!("Total interface data reached {} (limit: {})", crate::network::speed::format_bytes(total as f64), crate::network::speed::format_bytes(threshold as f64));
                                         }
                                     }
-                                    "connection_lost" => {
-                                        if !iface.is_up {
-                                            should_trigger = true;
-                                            alert_msg = format!("Network interface {} went DOWN", iface.name);
-                                        }
+                                    "connection_lost" if !iface.is_up => {
+                                        should_trigger = true;
+                                        alert_msg = format!("Network interface {} went DOWN", iface.name);
                                     }
                                     _ => {}
                                 }
