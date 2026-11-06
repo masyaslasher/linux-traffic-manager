@@ -48,10 +48,11 @@ export const DiagnosticsPage: React.FC<DiagnosticsPageProps> = ({
 
   const handleTestPort = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!portHost || !portNum) return;
+    const port = parseInt(portNum, 10);
+    if (!portHost.trim() || isNaN(port) || port < 1 || port > 65535) return;
     setIsCheckingPort(true);
     try {
-      const res = await api.checkTcpPort(portHost, parseInt(portNum, 10));
+      const res = await api.checkTcpPort(portHost.trim(), port);
       setPortResult(res);
     } catch (err) {
       console.error(err);

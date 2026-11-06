@@ -56,8 +56,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   if (samples.length > 0) {
     const first = samples[0];
     const last = samples[samples.length - 1];
-    totalRx = last.rx_bytes_total >= first.rx_bytes_total ? last.rx_bytes_total - first.rx_bytes_total : last.rx_bytes_total;
-    totalTx = last.tx_bytes_total >= first.tx_bytes_total ? last.tx_bytes_total - first.tx_bytes_total : last.tx_bytes_total;
+    const firstRx = first?.rx_bytes_total ?? 0;
+    const lastRx = last?.rx_bytes_total ?? 0;
+    const firstTx = first?.tx_bytes_total ?? 0;
+    const lastTx = last?.tx_bytes_total ?? 0;
+    totalRx = lastRx >= firstRx ? lastRx - firstRx : lastRx;
+    totalTx = lastTx >= firstTx ? lastTx - firstTx : lastTx;
   }
 
   const chartData = samples.map((s) => ({

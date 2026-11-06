@@ -1,10 +1,10 @@
 Name:           linux-traffic-manager
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
 Summary:        Modern, lightweight and privacy-focused network traffic monitor for Linux
 
 License:        MIT
-URL:            https://github.com/linux-traffic-manager/linux-traffic-manager
+URL:            https://github.com/masyaslasher/linux-traffic-manager
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  rust >= 1.80

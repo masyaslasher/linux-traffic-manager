@@ -41,13 +41,13 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   });
 
   const chartData = historicalSamples.map((s) => ({
-    time: new Date(s.timestamp * 1000).toLocaleTimeString([], {
+    time: new Date((s.timestamp || 0) * 1000).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
     }),
-    download: s.rx_speed_bps,
-    upload: s.tx_speed_bps,
+    download: s.rx_speed_bps || 0,
+    upload: s.tx_speed_bps || 0,
   }));
 
   const ranges: ('5m' | '15m' | '1h' | '6h' | '24h' | '7d' | '30d')[] = [

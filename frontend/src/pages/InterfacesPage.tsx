@@ -53,7 +53,7 @@ export const InterfacesPage: React.FC<InterfacesPageProps> = ({
                     <div className="p-2 rounded-lg bg-surface-secondary border border-border text-primary">
                       {iface.is_loopback ? (
                         <Radio className="w-4 h-4" />
-                      ) : iface.name.startsWith('wl') ? (
+                      ) : String(iface.name || '').startsWith('wl') ? (
                         <Wifi className="w-4 h-4" />
                       ) : (
                         <Server className="w-4 h-4" />
@@ -82,7 +82,7 @@ export const InterfacesPage: React.FC<InterfacesPageProps> = ({
                     }`}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    {iface.state.toUpperCase()}
+                    {(iface.state || 'UNKNOWN').toUpperCase()}
                   </span>
                 </div>
 

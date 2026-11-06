@@ -1,6 +1,6 @@
 [package]
 name = "ltm-core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Linux Traffic Manager Contributors"]
 description = "Core network monitoring, socket discovery, procfs parsers, and SQLite storage for Linux Traffic Manager"

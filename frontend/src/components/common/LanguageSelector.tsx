@@ -57,7 +57,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ compact = fa
               <Globe className="w-3 h-3 text-primary" />
               Язык интерфейса
             </span>
-            <span className="text-primary font-mono text-[9px] lowercase">10 языков</span>
+            <span className="text-primary font-mono text-[9px] lowercase">{languages.length} языков</span>
           </div>
 
           <div className="max-h-80 overflow-y-auto py-1 divide-y divide-border/20">

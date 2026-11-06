@@ -34,12 +34,12 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
         (app.name?.toLowerCase().includes(q) ?? false) ||
         (app.executable_path?.toLowerCase().includes(q) ?? false) ||
         (app.user?.toLowerCase().includes(q) ?? false) ||
-        app.pid?.toString().includes(q)
+        (app.pid?.toString() ?? '').includes(q)
     )
     .sort((a, b) => {
-      if (sortBy === 'connections') return b.connection_count - a.connection_count;
-      if (sortBy === 'pid') return a.pid - b.pid;
-      return a.name.localeCompare(b.name);
+      if (sortBy === 'connections') return (b.connection_count ?? 0) - (a.connection_count ?? 0);
+      if (sortBy === 'pid') return (a.pid ?? 0) - (b.pid ?? 0);
+      return (a.name ?? '').localeCompare(b.name ?? '');
     });
 
   return (

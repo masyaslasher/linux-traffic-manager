@@ -13,6 +13,7 @@ import {
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
+import { useExtensions } from '../context/ExtensionContext';
 import { useI18n } from '../i18n';
 import {
   AppAppearanceSettings,
@@ -50,6 +51,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onSelectProfile,
 }) => {
   const { lang, setLang, languages, t } = useI18n();
+  const { applyTheme } = useExtensions();
   const [activeCategory, setActiveCategory] = useState<
     'appearance' | 'language' | 'monitoring' | 'storage' | 'profiles' | 'security' | 'about'
   >('appearance');
@@ -165,7 +167,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 return (
                   <div
                     key={item.id}
-                    onClick={() => onChangeAppearance({ theme: item.id })}
+                    onClick={() => {
+                      onChangeAppearance({ theme: item.id });
+                      applyTheme(item.id === 'dark' ? 'orange-default' : item.id === 'amoled' ? 'matrix' : item.id === 'light' ? 'paper' : item.id);
+                    }}
                     className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                       isSelected
                         ? 'border-primary ring-2 ring-primary/40 shadow-md'

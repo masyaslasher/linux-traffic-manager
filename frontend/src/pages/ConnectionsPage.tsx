@@ -63,9 +63,9 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({ connections })
     if (sortField === 'pid') {
       cmp = (a.pid ?? 0) - (b.pid ?? 0);
     } else if (sortField === 'local_port') {
-      cmp = a.local_port - b.local_port;
+      cmp = (a.local_port ?? 0) - (b.local_port ?? 0);
     } else if (sortField === 'state') {
-      cmp = a.state.localeCompare(b.state);
+      cmp = (a.state ?? '').localeCompare(b.state ?? '');
     }
     return sortAsc ? cmp : -cmp;
   });

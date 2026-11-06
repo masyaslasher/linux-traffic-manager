@@ -45,14 +45,17 @@ export const AutomationPage: React.FC<AutomationPageProps> = ({
     const id = `rule_${Date.now()}`;
     let conditionJson = '{}';
 
+    const parsedThresh = parseFloat(newThreshold);
+    const safeThresh = isNaN(parsedThresh) || parsedThresh < 0 ? 50 : parsedThresh;
+
     if (newTriggerType === 'download_above' || newTriggerType === 'upload_above') {
-      const bps = parseFloat(newThreshold) * 1024 * 1024;
+      const bps = safeThresh * 1024 * 1024;
       conditionJson = JSON.stringify({ threshold_bps: bps });
     } else if (newTriggerType === 'total_traffic_above') {
-      const bytes = parseFloat(newThreshold) * 1024 * 1024 * 1024;
+      const bytes = safeThresh * 1024 * 1024 * 1024;
       conditionJson = JSON.stringify({ threshold_bytes: bytes });
     } else if (newTriggerType === 'high_latency') {
-      conditionJson = JSON.stringify({ threshold_ms: parseFloat(newThreshold) });
+      conditionJson = JSON.stringify({ threshold_ms: safeThresh });
     }
 
     const rule: StoredAutomationRule = {
