@@ -91,18 +91,28 @@
 
 ## 📦 Download & Installation
 
-Pre-built binaries for Fedora, RHEL, and other Linux distributions are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
+Pre-built binaries for Fedora, Ubuntu, Debian, Windows and generic Linux are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
 
-### Installing on Fedora / RHEL (RPM)
+### 🐧 Installing on Ubuntu / Debian / Pop!_OS / Linux Mint (.deb)
 
 ```bash
-# Download the latest RPM from GitHub Releases:
-sudo dnf install -y ./linux-traffic-manager-*.x86_64.rpm
-
-# Or launch directly from your application launcher!
+# Download the .deb from GitHub Releases:
+sudo apt install ./linux-traffic-manager_0.2.0_amd64.deb
 ```
 
-### Portable Binary Tarball
+### 🔴 Installing on Fedora / RHEL / CentOS (.rpm)
+
+```bash
+# Download the .rpm from GitHub Releases:
+sudo dnf install -y ./Linux\ Traffic\ Manager-*.x86_64.rpm
+```
+
+### 🪟 Windows (Portable .exe)
+
+- Download `linux-traffic-manager-v0.2.0-portable.exe` directly or download `linux-traffic-manager-v0.2.0-windows-x86_64-portable.zip`.
+- Run `linux-traffic-manager.exe` without any installation or administrator rights required!
+
+### 📦 Generic Linux Portable Tarball
 
 ```bash
 tar -xzf linux-traffic-manager-v0.2.0-x86_64.tar.gz

@@ -13,6 +13,7 @@ pub struct ProcessMetadata {
 
 /// Convert a numeric UID to a system username via libc getpwuid
 pub fn resolve_username(uid: u32) -> String {
+    #[cfg(unix)]
     unsafe {
         let passwd = libc::getpwuid(uid as libc::uid_t);
         if !passwd.is_null() && !(*passwd).pw_name.is_null() {
@@ -21,6 +22,14 @@ pub fn resolve_username(uid: u32) -> String {
                 .into_owned()
         } else {
             uid.to_string()
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        if uid == 0 {
+            "SYSTEM".to_string()
+        } else {
+            "User".to_string()
         }
     }
 }

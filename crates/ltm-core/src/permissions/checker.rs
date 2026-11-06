@@ -16,7 +16,11 @@ pub struct PermissionReport {
 
 /// Inspect current process permissions and Linux environment capabilities
 pub fn inspect_permissions() -> PermissionReport {
+    #[cfg(unix)]
     let uid = unsafe { libc::getuid() };
+    #[cfg(not(unix))]
+    let uid = 1000;
+
     let is_root = uid == 0;
 
     let can_read_proc_net_dev =

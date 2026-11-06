@@ -53,6 +53,7 @@ pub fn parse_proc_net_dev(content: &str) -> HashMap<String, RawDevCounters> {
 }
 
 /// Retrieve IPv4 and IPv6 addresses for all interfaces using libc getifaddrs
+#[cfg(unix)]
 pub fn get_system_interface_addresses() -> HashMap<String, Vec<String>> {
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -91,6 +92,11 @@ pub fn get_system_interface_addresses() -> HashMap<String, Vec<String>> {
     }
 
     map
+}
+
+#[cfg(not(unix))]
+pub fn get_system_interface_addresses() -> HashMap<String, Vec<String>> {
+    HashMap::new()
 }
 
 /// Read DNS nameservers from system /etc/resolv.conf
