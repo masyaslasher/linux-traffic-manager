@@ -95,7 +95,7 @@ mod tests {
     fn test_gateway_route_parsing() {
         let sample =
             "Iface\tDestination\tGateway\tFlags\tRefCnt\tUse\tMetric\tMask\tMTU\tWindow\tIRTT\n\
-                      enp6s0\t00000000\t0100A8C0\t0003\t0\t0\t100\t00000000\t0\t0\t0\n";
+                      eth0\t00000000\t0100000A\t0003\t0\t0\t100\t00000000\t0\t0\t0\n";
 
         let mut parsed_gw = None;
         for line in sample.lines().skip(1) {
@@ -105,6 +105,6 @@ mod tests {
             }
         }
 
-        assert_eq!(parsed_gw.unwrap(), Ipv4Addr::new(192, 168, 0, 1));
+        assert_eq!(parsed_gw.unwrap(), Ipv4Addr::new(10, 0, 0, 1));
     }
 }

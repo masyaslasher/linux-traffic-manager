@@ -12,9 +12,9 @@ import {
 
 export const mockInterfaces: NetworkInterface[] = [
   {
-    name: 'enp6s0',
-    ip_addresses: ['192.168.0.105', 'fe80::4a21:3bff:fe91:21ad'],
-    mac_address: '48:21:3b:91:21:ad',
+    name: 'eth0',
+    ip_addresses: ['10.0.0.15', 'fe80::1ff:fe00:1'],
+    mac_address: '52:54:00:12:34:56',
     state: 'up',
     is_up: true,
     is_loopback: false,
@@ -77,9 +77,9 @@ export const generateMockHistoryPoints = (): TrafficHistoryPoint[] => {
 
 export const mockConnections: NetworkConnection[] = [
   {
-    id: 'TCP-192.168.0.105:52310-142.250.180.206:443-42806',
+    id: 'TCP-10.0.0.15:52310-142.250.180.206:443-42806',
     protocol: 'TCP',
-    local_address: '192.168.0.105',
+    local_address: '10.0.0.15',
     local_port: 52310,
     remote_address: '142.250.180.206',
     remote_port: 443,
@@ -88,7 +88,7 @@ export const mockConnections: NetworkConnection[] = [
     uid: 1000,
     pid: 5154,
     process_name: 'firefox',
-    user: 'aluynon',
+    user: 'user',
     first_seen: Math.floor(Date.now() / 1000) - 300,
   },
   {
@@ -103,13 +103,13 @@ export const mockConnections: NetworkConnection[] = [
     uid: 1000,
     pid: 3201,
     process_name: 'code',
-    user: 'aluynon',
+    user: 'user',
     first_seen: Math.floor(Date.now() / 1000) - 1800,
   },
   {
-    id: 'UDP-192.168.0.105:5353-224.0.0.251:5353-10705',
+    id: 'UDP-10.0.0.15:5353-224.0.0.251:5353-10705',
     protocol: 'UDP',
-    local_address: '192.168.0.105',
+    local_address: '10.0.0.15',
     local_port: 5353,
     remote_address: '224.0.0.251',
     remote_port: 5353,
@@ -128,7 +128,7 @@ export const mockApplications: ProcessAppSummary[] = [
     pid: 5154,
     name: 'firefox',
     executable_path: '/usr/lib64/firefox/firefox',
-    user: 'aluynon',
+    user: 'user',
     connection_count: 14,
     tcp_count: 14,
     udp_count: 0,
@@ -139,7 +139,7 @@ export const mockApplications: ProcessAppSummary[] = [
     pid: 3201,
     name: 'code',
     executable_path: '/usr/share/code/code',
-    user: 'aluynon',
+    user: 'user',
     connection_count: 6,
     tcp_count: 6,
     udp_count: 0,
@@ -165,8 +165,8 @@ export const mockDiagnosticReport: DiagnosticReport = {
   dns_status: 'Working',
   dns_latency_ms: 18.4,
   gateway: {
-    interface: 'enp6s0',
-    gateway_ip: '192.168.0.1',
+    interface: 'eth0',
+    gateway_ip: '10.0.0.1',
     is_reachable: true,
     latency_ms: 1.2,
   },
@@ -232,7 +232,7 @@ export const mockHistoricalSamples: StoredTrafficSample[] = [
   {
     id: 1,
     timestamp: Math.floor(Date.now() / 1000) - 3600,
-    interface_name: 'enp6s0',
+    interface_name: 'eth0',
     rx_speed_bps: 1024000,
     tx_speed_bps: 128000,
     rx_bytes_total: 300000000,
@@ -241,7 +241,7 @@ export const mockHistoricalSamples: StoredTrafficSample[] = [
   {
     id: 2,
     timestamp: Math.floor(Date.now() / 1000) - 1800,
-    interface_name: 'enp6s0',
+    interface_name: 'eth0',
     rx_speed_bps: 2048000,
     tx_speed_bps: 512000,
     rx_bytes_total: 320000000,
@@ -250,7 +250,7 @@ export const mockHistoricalSamples: StoredTrafficSample[] = [
   {
     id: 3,
     timestamp: Math.floor(Date.now() / 1000),
-    interface_name: 'enp6s0',
+    interface_name: 'eth0',
     rx_speed_bps: 1258291,
     tx_speed_bps: 245100,
     rx_bytes_total: 345829120,

@@ -205,7 +205,7 @@ export const api = {
 
   probeRouteHops: async (target: string, maxHops?: number): Promise<RouteHop[]> => {
     return safeInvoke('probe_route_hops', { target, maxHops }, [
-      { hop: 1, ip: '192.168.0.1', rtt_ms: 1.2, status: 'Local Gateway' },
+      { hop: 1, ip: '10.0.0.1', rtt_ms: 1.2, status: 'Local Gateway' },
       { hop: 2, ip: '1.1.1.1', rtt_ms: 22.4, status: `Target Host (${target})` },
     ]);
   },

@@ -256,7 +256,7 @@ mod tests {
     const SAMPLE_PROC_DEV: &str = r#"Inter-|   Receive                                                |  Transmit
  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
     lo: 16412278   19635    0    0    0     0          0         0 16412278   19635    0    0    0     0       0          0
-enp6s0: 324756337  271850    0    1    0     0          0       289 135704666  229104    0    0    0     0       0          0
+  eth0: 324756337  271850    0    1    0     0          0       289 135704666  229104    0    0    0     0       0          0
 "#;
 
     #[test]
@@ -264,13 +264,13 @@ enp6s0: 324756337  271850    0    1    0     0          0       289 135704666  2
         let parsed = parse_proc_net_dev(SAMPLE_PROC_DEV);
         assert_eq!(parsed.len(), 2);
 
-        let enp = parsed.get("enp6s0").expect("enp6s0 parsed");
-        assert_eq!(enp.rx_bytes, 324756337);
-        assert_eq!(enp.rx_packets, 271850);
-        assert_eq!(enp.rx_errs, 0);
-        assert_eq!(enp.rx_drop, 1);
-        assert_eq!(enp.tx_bytes, 135704666);
-        assert_eq!(enp.tx_packets, 229104);
+        let eth = parsed.get("eth0").expect("eth0 parsed");
+        assert_eq!(eth.rx_bytes, 324756337);
+        assert_eq!(eth.rx_packets, 271850);
+        assert_eq!(eth.rx_errs, 0);
+        assert_eq!(eth.rx_drop, 1);
+        assert_eq!(eth.tx_bytes, 135704666);
+        assert_eq!(eth.tx_packets, 229104);
 
         let lo = parsed.get("lo").expect("lo parsed");
         assert_eq!(lo.rx_bytes, 16412278);

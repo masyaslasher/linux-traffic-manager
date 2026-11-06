@@ -20,7 +20,7 @@ However, in stock Linux kernels, unprivileged user space cannot query the exact 
 ```text
 ┌────────────────────────────────────────────────────────┐
 │               LTM Desktop GUI (Unprivileged)           │
-│   - Runs as standard user `aluynon`                    │
+│   - Runs as standard user `user`                       │
 │   - Renders React UI and Tauri window                  │
 │   - Communicates via local Unix Domain Socket          │
 └───────────────────────────▲────────────────────────────┘

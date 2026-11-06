@@ -265,7 +265,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <div className="flex justify-between p-2 rounded bg-surface-secondary border border-border/40">
               <span className="text-text-muted font-sans">{t.defaultGateway}:</span>
               <span className="text-text-primary">
-                {diagnosticReport?.gateway?.gateway_ip || activeInterface?.gateway || '192.168.0.1'}
+                {diagnosticReport?.gateway?.gateway_ip || activeInterface?.gateway || '10.0.0.1'}
               </span>
             </div>
 
