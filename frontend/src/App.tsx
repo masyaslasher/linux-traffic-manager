@@ -75,9 +75,8 @@ export const App: React.FC = () => {
     };
   });
 
-  // Apply theme class to body
+  // Save appearance to localStorage
   useEffect(() => {
-    document.body.className = `theme-${appearance.theme}`;
     localStorage.setItem('ltm_appearance', JSON.stringify(appearance));
   }, [appearance]);
 

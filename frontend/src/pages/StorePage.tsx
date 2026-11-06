@@ -1,50 +1,40 @@
 import React, { useState } from 'react';
 import {
   Check,
-  CheckCircle2,
-  Download,
   Filter,
   Layers,
   Palette,
+  Power,
   Puzzle,
   RotateCcw,
   Search,
   Shield,
   Sparkles,
-  Star,
-  Trash2,
   Zap,
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { useExtensions } from '../context/ExtensionContext';
 import { useI18n } from '../i18n';
-import { StoreCategory } from '../types/store';
 
 export const StorePage: React.FC = () => {
   const { t } = useI18n();
   const {
     themes,
     extensions,
-    installedExtensions,
+    activeThemeId,
+    toggleTheme,
+    resetToDefaultTheme,
     enabledExtensions,
-    installedThemes,
-    activeCustomTheme,
-    installExtension,
-    uninstallExtension,
     toggleExtension,
-    installTheme,
-    uninstallTheme,
-    applyTheme,
   } = useExtensions();
 
-  const [activeTab, setActiveTab] = useState<StoreCategory>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'themes' | 'extensions'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const filteredThemes = themes.filter((theme) => {
     if (activeTab === 'extensions') return false;
-    if (activeTab === 'installed' && !installedThemes.includes(theme.id)) return false;
     if (selectedTag && !theme.tags.includes(selectedTag)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -60,7 +50,6 @@ export const StorePage: React.FC = () => {
 
   const filteredExtensions = extensions.filter((ext) => {
     if (activeTab === 'themes') return false;
-    if (activeTab === 'installed' && !installedExtensions.includes(ext.id)) return false;
     if (selectedTag && !ext.tags.includes(selectedTag)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -74,7 +63,6 @@ export const StorePage: React.FC = () => {
     return true;
   });
 
-  // Collect all unique tags for quick filter pills
   const allTags = Array.from(
     new Set([
       ...themes.flatMap((t) => t.tags),
@@ -88,30 +76,30 @@ export const StorePage: React.FC = () => {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600/20 via-surface-secondary to-cyan-600/15 border border-border p-6 shadow-md">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-xl">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-[11px] font-semibold tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-              LTM Ecosystem Hub
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[11px] font-semibold tracking-wide uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              LTM Hub
             </div>
             <h2 className="text-xl font-bold tracking-tight text-text-primary">
-              {t.store} & Custom Themes
+              {t.store}
             </h2>
             <p className="text-xs text-text-muted leading-relaxed">
-              Персонализируйте сетевой менеджер: 10 авторских тем с уникальными цветовыми схемами и 5 полезных модулей для анализа трафика, приватности и контроля бюджета.
+              Все 10 тем и 5 полезных модулей уже встроены в программу. Не нужно ничего скачивать — просто включайте и выключайте то, что вам нужно, в один клик.
             </p>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <div className="p-3 rounded-xl bg-surface border border-border text-center">
-              <div className="text-lg font-bold text-orange-400">10</div>
+              <div className="text-lg font-bold text-primary">10</div>
               <div className="text-[10px] text-text-dim uppercase">Темы</div>
             </div>
             <div className="p-3 rounded-xl bg-surface border border-border text-center">
               <div className="text-lg font-bold text-cyan-400">5</div>
-              <div className="text-[10px] text-text-dim uppercase">Плагины</div>
+              <div className="text-[10px] text-text-dim uppercase">Модули</div>
             </div>
             <div className="p-3 rounded-xl bg-surface border border-border text-center">
-              <div className="text-lg font-bold text-emerald-400">100%</div>
-              <div className="text-[10px] text-text-dim uppercase">Offline</div>
+              <div className="text-lg font-bold text-emerald-400">1-Click</div>
+              <div className="text-[10px] text-text-dim uppercase">Включение</div>
             </div>
           </div>
         </div>
@@ -122,15 +110,14 @@ export const StorePage: React.FC = () => {
         {/* Category Tabs */}
         <div className="flex items-center gap-1.5 bg-surface border border-border p-1 rounded-xl text-xs font-medium">
           {[
-            { id: 'all', label: 'Все', icon: <Layers className="w-3.5 h-3.5" /> },
+            { id: 'all', label: 'Все темы и модули', icon: <Layers className="w-3.5 h-3.5" /> },
             { id: 'themes', label: 'Темы оформления (10)', icon: <Palette className="w-3.5 h-3.5" /> },
             { id: 'extensions', label: 'Расширения (5)', icon: <Puzzle className="w-3.5 h-3.5" /> },
-            { id: 'installed', label: 'Установленные', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => {
-                setActiveTab(tab.id as StoreCategory);
+                setActiveTab(tab.id as any);
                 setSelectedTag(null);
               }}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
@@ -148,7 +135,7 @@ export const StorePage: React.FC = () => {
         {/* Search Input */}
         <div className="w-full md:w-72">
           <Input
-            placeholder="Поиск тем и расширений..."
+            placeholder="Быстрый поиск тем..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             icon={<Search className="w-4 h-4" />}
@@ -159,7 +146,7 @@ export const StorePage: React.FC = () => {
       {/* Tag Filter Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
         <span className="text-text-dim text-[11px] flex items-center gap-1 shrink-0">
-          <Filter className="w-3 h-3" /> Теги:
+          <Filter className="w-3 h-3" /> Фильтр:
         </span>
         {allTags.map((tag) => (
           <button
@@ -185,38 +172,38 @@ export const StorePage: React.FC = () => {
       </div>
 
       {/* ---------------- SECTION 1: THEMES ---------------- */}
-      {(activeTab === 'all' || activeTab === 'themes' || activeTab === 'installed') && filteredThemes.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'themes') && filteredThemes.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-border/60 pb-2">
             <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
-              <Palette className="w-4 h-4 text-orange-400" />
-              Темы оформления ({filteredThemes.length})
+              <Palette className="w-4 h-4 text-primary" />
+              Темы оформления — включение в 1 клик ({filteredThemes.length})
             </h3>
-            {activeCustomTheme && (
+            {activeThemeId !== 'orange-default' && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => applyTheme(null)}
+                onClick={resetToDefaultTheme}
                 className="text-[11px] text-text-secondary hover:text-primary"
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
-                Сбросить на фирменную оранжевую
+                Сбросить на оранжевую тему
               </Button>
             )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredThemes.map((theme) => {
-              const isInstalled = installedThemes.includes(theme.id);
-              const isActive = activeCustomTheme === theme.id;
+              const isActive = activeThemeId === theme.id;
 
               return (
                 <div
                   key={theme.id}
-                  className={`group rounded-xl border p-4 flex flex-col justify-between transition-all duration-150 ${
+                  onClick={() => toggleTheme(theme.id)}
+                  className={`group rounded-xl border p-4 flex flex-col justify-between transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'border-primary ring-2 ring-primary/40 bg-surface shadow-lg'
-                      : 'border-border bg-surface hover:border-primary/40 hover:shadow-md'
+                      ? 'border-primary ring-2 ring-primary/50 bg-surface shadow-xl'
+                      : 'border-border bg-surface hover:border-primary/50 hover:shadow-md'
                   }`}
                 >
                   <div>
@@ -237,13 +224,15 @@ export const StorePage: React.FC = () => {
                         >
                           {theme.name}
                         </span>
-                        {theme.badge && (
-                          <span
-                            className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-black/40 text-white border border-white/20"
-                          >
+                        {isActive ? (
+                          <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-primary text-white border border-primary shadow-sm flex items-center gap-1">
+                            <Check className="w-2.5 h-2.5" /> Включена
+                          </span>
+                        ) : theme.badge ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-black/40 text-white border border-white/20">
                             {theme.badge}
                           </span>
-                        )}
+                        ) : null}
                       </div>
 
                       {/* Swatch color circles */}
@@ -271,16 +260,6 @@ export const StorePage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Metadata */}
-                    <div className="flex items-center justify-between text-xs text-text-dim mb-1 font-mono">
-                      <span>{theme.author} • v{theme.version}</span>
-                      <div className="flex items-center gap-1 text-amber-400">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                        <span>{theme.rating}</span>
-                        <span className="text-text-dim">({theme.downloads})</span>
-                      </div>
-                    </div>
-
                     <p className="text-xs text-text-secondary leading-relaxed mb-3">
                       {theme.description}
                     </p>
@@ -298,47 +277,23 @@ export const StorePage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-                    {isActive ? (
-                      <div className="w-full py-1.5 rounded-lg bg-primary/15 border border-primary/30 text-primary font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm">
-                        <Check className="w-3.5 h-3.5 text-primary" />
-                        Текущая тема
-                      </div>
-                    ) : isInstalled ? (
-                      <>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => applyTheme(theme.id)}
-                        >
-                          Применить
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Удалить тему"
-                          onClick={() => uninstallTheme(theme.id)}
-                          className="text-text-dim hover:text-error"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          installTheme(theme.id);
-                          applyTheme(theme.id);
-                        }}
-                      >
-                        <Download className="w-3.5 h-3.5 mr-1" />
-                        Установить и включить
-                      </Button>
-                    )}
+                  {/* Toggle Button */}
+                  <div className="pt-2 border-t border-border/50">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTheme(theme.id);
+                      }}
+                      className={`w-full py-2 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                        isActive
+                          ? 'bg-primary text-white border border-primary shadow-[0_0_12px_rgba(249,115,22,0.4)]'
+                          : 'bg-surface-secondary text-text-primary border border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <Power className="w-3.5 h-3.5" />
+                      <span>{isActive ? 'Включено (клик для выключения)' : 'Включить тему'}</span>
+                    </button>
                   </div>
                 </div>
               );
@@ -348,30 +303,29 @@ export const StorePage: React.FC = () => {
       )}
 
       {/* ---------------- SECTION 2: EXTENSIONS ---------------- */}
-      {(activeTab === 'all' || activeTab === 'extensions' || activeTab === 'installed') && filteredExtensions.length > 0 && (
+      {(activeTab === 'all' || activeTab === 'extensions') && filteredExtensions.length > 0 && (
         <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between border-b border-border/60 pb-2">
             <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
               <Puzzle className="w-4 h-4 text-cyan-400" />
-              Расширения и модули ({filteredExtensions.length})
+              Функциональные модули — переключатели ({filteredExtensions.length})
             </h3>
             <span className="text-xs text-text-dim font-mono">
-              Активно: {enabledExtensions.length} из {extensions.length}
+              Включено: {Object.values(enabledExtensions).filter(Boolean).length} из {extensions.length}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredExtensions.map((ext) => {
-              const isInstalled = installedExtensions.includes(ext.id);
-              const isEnabled = enabledExtensions.includes(ext.id);
+              const isEnabled = !!enabledExtensions[ext.id];
 
               return (
                 <div
                   key={ext.id}
                   className={`rounded-xl border p-5 flex flex-col justify-between bg-surface transition-all ${
                     isEnabled
-                      ? 'border-cyan-500/40 shadow-sm'
-                      : 'border-border opacity-90'
+                      ? 'border-emerald-500/40 shadow-sm'
+                      : 'border-border opacity-75'
                   }`}
                 >
                   <div className="space-y-3">
@@ -392,15 +346,14 @@ export const StorePage: React.FC = () => {
                             )}
                           </div>
                           <div className="text-[11px] text-text-dim font-mono">
-                            {ext.author} • v{ext.version}
+                            {ext.author}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 text-xs font-mono text-amber-400 shrink-0">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span>{ext.rating}</span>
-                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${isEnabled ? 'bg-emerald-500/20 text-emerald-400' : 'bg-surface-secondary text-text-dim'}`}>
+                        {isEnabled ? 'Активен' : 'Выключен'}
+                      </span>
                     </div>
 
                     <p className="text-xs text-text-secondary leading-relaxed">
@@ -411,7 +364,7 @@ export const StorePage: React.FC = () => {
                     <div className="space-y-1.5 bg-surface-secondary/50 rounded-lg p-3 border border-border/60 text-xs">
                       <div className="text-[10px] font-semibold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                         <Zap className="w-3 h-3 text-primary" />
-                        Возможности расширения:
+                        Что делает этот модуль:
                       </div>
                       <ul className="space-y-1 text-text-secondary">
                         {ext.features.map((feat, idx) => (
@@ -426,50 +379,22 @@ export const StorePage: React.FC = () => {
 
                   {/* Actions & Toggle */}
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-text-muted font-mono">{ext.downloads} загрузок</span>
-                      {isInstalled && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          Установлено
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-xs text-text-dim font-sans">
+                      {isEnabled ? 'Модуль активен во всех вкладках' : 'Модуль отключен'}
+                    </span>
 
-                    <div className="flex items-center gap-2">
-                      {isInstalled ? (
-                        <>
-                          <button
-                            onClick={() => toggleExtension(ext.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                              isEnabled
-                                ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
-                                : 'bg-surface-secondary border border-border text-text-muted hover:text-text-primary'
-                            }`}
-                          >
-                            <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'}`} />
-                            {isEnabled ? 'Включено' : 'Выключено'}
-                          </button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => uninstallExtension(ext.id)}
-                            title="Удалить расширение"
-                            className="text-text-dim hover:text-error"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => installExtension(ext.id)}
-                        >
-                          <Download className="w-3.5 h-3.5 mr-1" />
-                          Установить
-                        </Button>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleExtension(ext.id)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm ${
+                        isEnabled
+                          ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-400'
+                          : 'bg-surface-secondary border border-border text-text-muted hover:text-text-primary'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'}`} />
+                      <span>{isEnabled ? 'Включено' : 'Выключено'}</span>
+                    </button>
                   </div>
                 </div>
               );
@@ -483,10 +408,10 @@ export const StorePage: React.FC = () => {
         <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-semibold text-text-primary">
-            Безопасность и автономность LTM Store
+            100% Встроенный функционал без скачивания
           </span>
           <p className="text-text-muted leading-relaxed">
-            Все расширения и темы работают полностью локально на вашем компьютере внутри песочницы Linux Traffic Manager. Нет внешних облачных зависимостей, сбора аналитики или скрытых сетевых запросов.
+            Все 10 тем и расширения скомпилированы прямо внутри приложения. Никаких сетевых загрузок, ожидания скачивания или прав администратора — переключайте мгновенно.
           </p>
         </div>
       </div>
