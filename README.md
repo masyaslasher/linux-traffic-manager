@@ -115,7 +115,7 @@ LTM оснащён полностью реактивным движком инт
 | 🐎 | **Гутар донских казаков** | Гутаръ донскихъ казаковъ | `don_cossack` | Исторический диалект вольного донского казачества (*Сетевая справа, Приключки, Заставы, Гутарить*). |
 | 🇫🇷 | **Французский** | Français | `fr` | Langue française standard (*Trafic réseau, Surveillance des processus, Outils de diagnostic*). |
 | 🇵🇱 | **Польский** | Polski | `pl` | Język polski (*Aktywność sieciowa, Połączenia, Menedżer interfejsów*). |
-| 🌐 | **Межславянский** | Medžuslovjanski | `interslavic` | Панславянский искусственный вспомогательный язык, понятный без изучения всем славянским народам (*Sěťova aktivnost, Pripojeńa, Nastavjeńa*). |
+| 🌐 | **Межславянский** | Меджусловјанскы | `interslavic` | Панславянский вспомогательный язык на классической кириллице (*Преглед Мреже, Наблюдател Процесов, Сојединјењ, Настројкы*). |
 | 🌻 | **Суржик** | Суржик | `surzhyk` | Живой разговорный восточнославянский суржик (*Шо там з инетом, Проги в сети, Настройки інтерфейсів*). |
 | 🏔️ | **Русинский** | Русиньскый | `rusyn` | Традиционный карпато-русинский литературный язык (*Сїтьова активіта, Зъєднаня, Діаґностіка*). |
 
@@ -153,7 +153,15 @@ LTM оснащён полностью реактивным движком инт
 
 ## 📦 Download & Installation
 
-Pre-built binaries for Fedora, Ubuntu, Debian, Windows and generic Linux are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
+Pre-built binaries for Fedora, Ubuntu, Debian, Arch, Windows and generic Linux are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
+
+### 🚀 Universal Linux AppImage (Works on any Linux distro)
+
+Запуск на любом дистрибутиве Linux в один клик без установки:
+```bash
+chmod +x linux-traffic-manager-v0.2.0-x86_64.AppImage
+./linux-traffic-manager-v0.2.0-x86_64.AppImage
+```
 
 ### 🐧 Installing on Ubuntu / Debian / Pop!_OS / Linux Mint (.deb)
 
