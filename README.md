@@ -153,7 +153,7 @@ LTM оснащён полностью реактивным движком инт
 
 ## 📦 Download & Installation
 
-Pre-built binaries for Fedora, Ubuntu, Debian, Arch, Windows and generic Linux are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
+Pre-built packages for Fedora, Ubuntu, Debian, Arch, and generic Linux are available on the [Releases page](https://github.com/masyaslasher/linux-traffic-manager/releases).
 
 ### 🚀 Universal Linux AppImage (Works on any Linux distro)
 
@@ -176,11 +176,6 @@ sudo apt install ./linux-traffic-manager_0.2.0_amd64.deb
 # Download the .rpm from GitHub Releases:
 sudo dnf install -y ./Linux\ Traffic\ Manager-*.x86_64.rpm
 ```
-
-### 🪟 Windows (Portable .exe)
-
-- Download `linux-traffic-manager-v0.2.0-portable.exe` directly or download `linux-traffic-manager-v0.2.0-windows-x86_64-portable.zip`.
-- Run `linux-traffic-manager.exe` without any installation or administrator rights required!
 
 ### 📦 Generic Linux Portable Tarball
 
