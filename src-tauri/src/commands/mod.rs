@@ -16,13 +16,13 @@ pub fn get_interfaces() -> Vec<NetworkInterface> {
 
 #[tauri::command]
 pub fn get_speed_metrics(state: State<'_, SharedMonitorState>) -> Option<SpeedMetrics> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     s.latest_metrics.clone()
 }
 
 #[tauri::command]
 pub fn get_traffic_history(state: State<'_, SharedMonitorState>) -> Vec<TrafficHistoryPoint> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     s.get_history()
 }
 
@@ -46,7 +46,7 @@ pub async fn run_diagnostics(
 ) -> Result<DiagnosticReport, String> {
     let report = ltm_core::diagnostics::runner::run_network_diagnostics().await;
     {
-        let s = state.lock().unwrap();
+        let s = state.lock().unwrap_or_else(|e| e.into_inner());
         if let Some(ref db) = s.db {
             let _ = db.record_diagnostic_report(&report);
         }
@@ -76,7 +76,7 @@ pub fn query_history(
     end_ts: i64,
     limit: Option<usize>,
 ) -> Result<Vec<StoredTrafficSample>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.query_traffic_history(
             interface_name.as_deref(),
@@ -95,7 +95,7 @@ pub fn query_diagnostic_history(
     state: State<'_, SharedMonitorState>,
     limit: Option<usize>,
 ) -> Result<Vec<StoredDiagnosticReport>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.query_diagnostic_history(limit.unwrap_or(50))
             .map_err(|e| e.to_string())
@@ -114,7 +114,7 @@ pub fn set_monitored_interface(
     state: State<'_, SharedMonitorState>,
     interface_name: Option<String>,
 ) {
-    let mut s = state.lock().unwrap();
+    let mut s = state.lock().unwrap_or_else(|e| e.into_inner());
     s.config.selected_interface = interface_name;
 }
 
@@ -123,7 +123,7 @@ pub fn prune_database(
     state: State<'_, SharedMonitorState>,
     retention_days: u32,
 ) -> Result<usize, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.prune_retention(retention_days)
             .map_err(|e| e.to_string())
@@ -134,7 +134,7 @@ pub fn prune_database(
 
 #[tauri::command]
 pub fn get_db_stats(state: State<'_, SharedMonitorState>) -> u64 {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.get_database_size_bytes()
     } else {
@@ -146,7 +146,7 @@ pub fn get_db_stats(state: State<'_, SharedMonitorState>) -> u64 {
 pub fn get_automation_rules(
     state: State<'_, SharedMonitorState>,
 ) -> Result<Vec<StoredAutomationRule>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.get_automation_rules().map_err(|e| e.to_string())
     } else {
@@ -159,7 +159,7 @@ pub fn save_automation_rule(
     state: State<'_, SharedMonitorState>,
     rule: StoredAutomationRule,
 ) -> Result<(), String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.save_automation_rule(&rule).map_err(|e| e.to_string())
     } else {
@@ -172,7 +172,7 @@ pub fn delete_automation_rule(
     state: State<'_, SharedMonitorState>,
     rule_id: String,
 ) -> Result<bool, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.delete_automation_rule(&rule_id).map_err(|e| e.to_string())
     } else {
@@ -186,7 +186,7 @@ pub fn toggle_automation_rule(
     rule_id: String,
     enabled: bool,
 ) -> Result<(), String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.toggle_automation_rule(&rule_id, enabled).map_err(|e| e.to_string())
     } else {
@@ -199,7 +199,7 @@ pub fn get_alert_events(
     state: State<'_, SharedMonitorState>,
     limit: Option<usize>,
 ) -> Result<Vec<StoredAlertEvent>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.get_alert_events(limit.unwrap_or(50)).map_err(|e| e.to_string())
     } else {
@@ -212,7 +212,7 @@ pub fn acknowledge_alert(
     state: State<'_, SharedMonitorState>,
     alert_id: i64,
 ) -> Result<(), String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.acknowledge_alert(alert_id).map_err(|e| e.to_string())
     } else {
@@ -224,7 +224,7 @@ pub fn acknowledge_alert(
 pub fn clear_alert_events(
     state: State<'_, SharedMonitorState>,
 ) -> Result<usize, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.clear_alert_events().map_err(|e| e.to_string())
     } else {
@@ -236,7 +236,7 @@ pub fn clear_alert_events(
 pub fn get_user_profiles(
     state: State<'_, SharedMonitorState>,
 ) -> Result<Vec<StoredUserProfile>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.get_user_profiles().map_err(|e| e.to_string())
     } else {
@@ -249,7 +249,7 @@ pub fn set_active_profile(
     state: State<'_, SharedMonitorState>,
     profile_id: String,
 ) -> Result<(), String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.set_active_profile(&profile_id).map_err(|e| e.to_string())
     } else {
@@ -262,7 +262,7 @@ pub fn get_setting(
     state: State<'_, SharedMonitorState>,
     key: String,
 ) -> Result<Option<String>, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.get_setting(&key).map_err(|e| e.to_string())
     } else {
@@ -276,7 +276,7 @@ pub fn set_setting(
     key: String,
     value_json: String,
 ) -> Result<(), String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.set_setting(&key, &value_json).map_err(|e| e.to_string())
     } else {
@@ -290,7 +290,7 @@ pub fn export_history_csv(
     start_ts: i64,
     end_ts: i64,
 ) -> Result<String, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.export_traffic_samples_csv(start_ts, end_ts).map_err(|e| e.to_string())
     } else {
@@ -304,7 +304,7 @@ pub fn export_history_json(
     start_ts: i64,
     end_ts: i64,
 ) -> Result<String, String> {
-    let s = state.lock().unwrap();
+    let s = state.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(ref db) = s.db {
         db.export_traffic_samples_json(start_ts, end_ts).map_err(|e| e.to_string())
     } else {

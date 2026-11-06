@@ -18,7 +18,7 @@ pub fn start_monitoring_task(state: SharedMonitorState) -> std::thread::JoinHand
 
             rt.block_on(async move {
                 let poll_interval_ms = {
-                    let s = state.lock().unwrap();
+                    let s = state.lock().unwrap_or_else(|e| e.into_inner());
                     s.config.poll_interval_ms
                 };
 
@@ -28,7 +28,7 @@ pub fn start_monitoring_task(state: SharedMonitorState) -> std::thread::JoinHand
                     timer.tick().await;
                     let now = Instant::now();
                     {
-                        let mut s = state.lock().unwrap();
+                        let mut s = state.lock().unwrap_or_else(|e| e.into_inner());
                         s.tick(now);
                     }
                 }

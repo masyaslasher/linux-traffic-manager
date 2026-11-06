@@ -47,10 +47,10 @@ export const ConnectionsPage: React.FC<ConnectionsPageProps> = ({ connections })
       const q = searchTerm.toLowerCase();
       return (
         (conn.process_name?.toLowerCase().includes(q) ?? false) ||
-        conn.local_address.includes(q) ||
-        conn.remote_address.includes(q) ||
-        conn.local_port.toString().includes(q) ||
-        conn.remote_port.toString().includes(q) ||
+        (conn.local_address?.toLowerCase().includes(q) ?? false) ||
+        (conn.remote_address?.toLowerCase().includes(q) ?? false) ||
+        (conn.local_port?.toString().includes(q) ?? false) ||
+        (conn.remote_port?.toString().includes(q) ?? false) ||
         (conn.pid?.toString().includes(q) ?? false)
       );
     }

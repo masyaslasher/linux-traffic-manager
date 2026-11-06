@@ -132,7 +132,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           label={t.primaryAdapter}
           value={activeInterface ? String(activeInterface.name) : 'None'}
           subvalue={
-            activeInterface?.ip_addresses[0] ??
+            activeInterface?.ip_addresses?.[0] ??
             (activeInterface?.is_up ? 'Link UP' : 'DOWN')
           }
           icon={<Wifi className="w-4 h-4" />}

@@ -32,7 +32,7 @@ import {
 
 // Check if Tauri desktop IPC is available
 export const isTauriEnvironment = (): boolean => {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
 };
 
 // Safe invoke wrapper

@@ -49,7 +49,7 @@ pub async fn run_network_diagnostics() -> DiagnosticReport {
     // 3. Latency & Packet loss probes
     // Cloudflare DNS 1.1.1.1:53 and Google DNS 8.8.8.8:53
     let probe_targets: Vec<SocketAddr> =
-        vec!["1.1.1.1:53".parse().unwrap(), "8.8.8.8:53".parse().unwrap()];
+        vec![SocketAddr::from(([1, 1, 1, 1], 53)), SocketAddr::from(([8, 8, 8, 8], 53))];
 
     let mut probe_results = Vec::new();
     for target in probe_targets {

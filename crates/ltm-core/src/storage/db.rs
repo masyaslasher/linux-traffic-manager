@@ -64,7 +64,7 @@ impl DatabaseManager {
 
     /// Record a traffic sample
     pub fn record_traffic_sample(&self, sample: &StoredTrafficSample) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "INSERT INTO traffic_samples (timestamp, interface_name, rx_speed_bps, tx_speed_bps, rx_bytes_total, tx_bytes_total)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -83,7 +83,7 @@ impl DatabaseManager {
     /// Record a diagnostic report
     pub fn record_diagnostic_report(&self, report: &DiagnosticReport) -> Result<()> {
         let raw_json = serde_json::to_string(report).unwrap_or_default();
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "INSERT INTO diagnostic_history (timestamp, network_status, dns_status, avg_latency_ms, packet_loss_percent, raw_json)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -107,7 +107,7 @@ impl DatabaseManager {
         end_ts: i64,
         limit: usize,
     ) -> Result<Vec<StoredTrafficSample>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut results = Vec::new();
 
         if let Some(iface) = interface_name {
@@ -165,7 +165,7 @@ impl DatabaseManager {
 
     /// Query recent diagnostic reports
     pub fn query_diagnostic_history(&self, limit: usize) -> Result<Vec<StoredDiagnosticReport>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare(
             "SELECT id, timestamp, network_status, dns_status, avg_latency_ms, packet_loss_percent, raw_json
              FROM diagnostic_history
@@ -194,7 +194,7 @@ impl DatabaseManager {
 
     /// Get all automation rules
     pub fn get_automation_rules(&self) -> Result<Vec<StoredAutomationRule>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare(
             "SELECT id, name, description, enabled, trigger_type, condition_json, action_type, action_params_json, cooldown_secs, last_triggered_ts, trigger_count
              FROM automation_rules
@@ -226,7 +226,7 @@ impl DatabaseManager {
 
     /// Insert or update an automation rule
     pub fn save_automation_rule(&self, rule: &StoredAutomationRule) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "INSERT INTO automation_rules (id, name, description, enabled, trigger_type, condition_json, action_type, action_params_json, cooldown_secs, last_triggered_ts, trigger_count)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
@@ -260,14 +260,14 @@ impl DatabaseManager {
 
     /// Delete an automation rule by ID
     pub fn delete_automation_rule(&self, rule_id: &str) -> Result<bool> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let affected = conn.execute("DELETE FROM automation_rules WHERE id = ?1", params![rule_id])?;
         Ok(affected > 0)
     }
 
     /// Toggle rule enabled status
     pub fn toggle_automation_rule(&self, rule_id: &str, enabled: bool) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "UPDATE automation_rules SET enabled = ?1 WHERE id = ?2",
             params![if enabled { 1 } else { 0 }, rule_id],
@@ -277,7 +277,7 @@ impl DatabaseManager {
 
     /// Record a triggered alert event
     pub fn record_alert_event(&self, alert: &StoredAlertEvent) -> Result<i64> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "INSERT INTO alert_events (timestamp, rule_id, severity, title, message, acknowledged)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -295,7 +295,7 @@ impl DatabaseManager {
 
     /// Query recent alerts
     pub fn get_alert_events(&self, limit: usize) -> Result<Vec<StoredAlertEvent>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare(
             "SELECT id, timestamp, rule_id, severity, title, message, acknowledged
              FROM alert_events
@@ -324,7 +324,7 @@ impl DatabaseManager {
 
     /// Acknowledge an alert
     pub fn acknowledge_alert(&self, alert_id: i64) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "UPDATE alert_events SET acknowledged = 1 WHERE id = ?1",
             params![alert_id],
@@ -334,14 +334,14 @@ impl DatabaseManager {
 
     /// Clear all alerts
     pub fn clear_alert_events(&self) -> Result<usize> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let count = conn.execute("DELETE FROM alert_events", [])?;
         Ok(count)
     }
 
     /// Retrieve all profiles
     pub fn get_user_profiles(&self) -> Result<Vec<StoredUserProfile>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare(
             "SELECT id, name, description, is_active, settings_json
              FROM user_profiles
@@ -367,7 +367,7 @@ impl DatabaseManager {
 
     /// Set active profile
     pub fn set_active_profile(&self, profile_id: &str) -> Result<()> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute("UPDATE user_profiles SET is_active = 0", [])?;
         conn.execute(
             "UPDATE user_profiles SET is_active = 1 WHERE id = ?1",
@@ -378,7 +378,7 @@ impl DatabaseManager {
 
     /// Get persistent app setting by key
     pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare("SELECT value_json FROM app_settings WHERE key = ?1")?;
         let mut rows = stmt.query(params![key])?;
         if let Some(row) = rows.next()? {
@@ -390,7 +390,7 @@ impl DatabaseManager {
 
     /// Get persistent app setting as structured StoredAppSetting
     pub fn get_app_setting(&self, key: &str) -> Result<Option<StoredAppSetting>> {
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         let mut stmt = conn.prepare("SELECT key, value_json, updated_at FROM app_settings WHERE key = ?1")?;
         let mut rows = stmt.query(params![key])?;
         if let Some(row) = rows.next()? {
@@ -407,7 +407,7 @@ impl DatabaseManager {
     /// Save persistent app setting
     pub fn set_setting(&self, key: &str, value_json: &str) -> Result<()> {
         let now = chrono::Utc::now().timestamp();
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
         conn.execute(
             "INSERT INTO app_settings (key, value_json, updated_at)
              VALUES (?1, ?2, ?3)
@@ -453,7 +453,7 @@ impl DatabaseManager {
     /// Prune data older than retention_days
     pub fn prune_retention(&self, retention_days: u32) -> Result<usize> {
         let cutoff_ts = chrono::Utc::now().timestamp() - (retention_days as i64 * 86400);
-        let conn = self.conn.lock().unwrap();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
 
         let deleted_samples = conn.execute(
             "DELETE FROM traffic_samples WHERE timestamp < ?1",

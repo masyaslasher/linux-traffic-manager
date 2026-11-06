@@ -27,13 +27,14 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
   const [expandedPid, setExpandedPid] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'connections' | 'name' | 'pid'>('connections');
 
+  const q = searchTerm.toLowerCase();
   const filteredApps = applications
     .filter(
       (app) =>
-        app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.executable_path.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.pid.toString().includes(searchTerm)
+        (app.name?.toLowerCase().includes(q) ?? false) ||
+        (app.executable_path?.toLowerCase().includes(q) ?? false) ||
+        (app.user?.toLowerCase().includes(q) ?? false) ||
+        app.pid?.toString().includes(q)
     )
     .sort((a, b) => {
       if (sortBy === 'connections') return b.connection_count - a.connection_count;
