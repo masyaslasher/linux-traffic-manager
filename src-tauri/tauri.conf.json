@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
+  "productName": "Linux Traffic Manager",
+  "version": "0.1.0",
+  "identifier": "org.linux.trafficmanager",
+  "build": {
+    "beforeDevCommand": "pnpm --prefix ../frontend dev",
+    "beforeBuildCommand": "pnpm --prefix ../frontend build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Linux Traffic Manager",
+        "width": 1200,
+        "height": 780,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["rpm", "appimage", "deb"],
+    "icon": [
+      "../assets/icons/app-icon.svg"
+    ],
+    "category": "Network",
+    "shortDescription": "Understand your network",
+    "longDescription": "A modern, lightweight and privacy-focused network traffic monitor for Linux, built with Rust and Tauri 2."
+  }
+}

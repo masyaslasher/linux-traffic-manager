@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Linux Traffic Manager
+Comment=Understand your network activity, active connections, and bandwidth usage
+Exec=linux-traffic-manager
+Icon=linux-traffic-manager
+Terminal=false
+Type=Application
+Categories=Network;Monitor;System;
+Keywords=network;traffic;monitor;bandwidth;connections;diagnostics;
+StartupNotify=true
+StartupWMClass=linux-traffic-manager

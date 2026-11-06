@@ -1,0 +1,41 @@
+name: Bug Report
+description: Create a report to help us improve Linux Traffic Manager
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: environment
+    attributes:
+      label: Linux Distribution & Version
+      description: e.g. Fedora 44, Fedora Silverblue, Arch Linux
+      placeholder: Fedora 44 Workstation (GNOME 48, Wayland)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this behavior?
+      placeholder: |
+        1. Open LTM
+        2. Navigate to 'Connections'
+        3. Filter by protocol UDP
+        4. See discrepancy
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output
+      description: Copy and paste relevant terminal logs or console messages.
+      render: shell

@@ -1,0 +1,42 @@
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock.pre-*
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# SQLite databases & runtime data
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+ltm_data.db
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# Environment & credentials (strict privacy policy)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
