@@ -10,6 +10,7 @@ import {
   Radio,
   Settings,
   ShieldCheck,
+  Sparkles,
   Workflow,
   Wifi,
 } from 'lucide-react';
@@ -59,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'automation', label: t.automation, icon: <Workflow className="w-4 h-4" /> },
         { id: 'bandwidth', label: t.bandwidth, icon: <Gauge className="w-4 h-4" /> },
+        { id: 'store', label: t.store, icon: <Sparkles className="w-4 h-4 text-orange-400" /> },
         { id: 'settings', label: t.settings, icon: <Settings className="w-4 h-4" /> },
       ],
     },

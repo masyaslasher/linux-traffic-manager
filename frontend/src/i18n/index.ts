@@ -42,6 +42,7 @@ export interface TranslationDictionary {
   bandwidth: string;
   history: string;
   settings: string;
+  store: string;
 
   // Header & Status
   online: string;
@@ -142,6 +143,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Управление полосой',
     history: 'История и логи',
     settings: 'Центр настроек',
+    store: 'Магазин расширений',
     online: 'В сети',
     offline: 'Не в сети',
     commandPalette: 'Командная строка',
@@ -225,6 +227,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Bandbreiten-Steuerung',
     history: 'Verlauf & Protokolle',
     settings: 'Einstellungen',
+    store: 'Erweiterungs-Store',
     online: 'Online',
     offline: 'Offline',
     commandPalette: 'Befehlspalette',
@@ -308,6 +311,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Керування смугою',
     history: 'Історія та логи',
     settings: 'Центр налаштувань',
+    store: 'Магазин розширень',
     online: 'В мережі',
     offline: 'Не в мережі',
     commandPalette: 'Командний рядок',
@@ -391,6 +395,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Управленіе полосой',
     history: 'Исторія и протоколы',
     settings: 'Центръ настроекъ',
+    store: 'Лавка прибавокъ',
     online: 'Въ сѣти',
     offline: 'Внѣ сѣти',
     commandPalette: 'Командная строка',
@@ -474,6 +479,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Укорот по струе',
     history: 'Бывальщина и запись',
     settings: 'Казачий уряд',
+    store: 'Ярмарка припасов',
     online: 'На страже (В сети)',
     offline: 'Умолкла сеть',
     commandPalette: 'Быстрый окрик',
@@ -557,6 +563,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Contrôle de Bande Passante',
     history: 'Historique & Journaux',
     settings: 'Paramètres',
+    store: 'Boutique d\'extensions',
     online: 'En ligne',
     offline: 'Hors ligne',
     commandPalette: 'Palette de commandes',
@@ -640,6 +647,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Zarządzanie Pasmem',
     history: 'Historia i Dzienniki',
     settings: 'Ustawienia',
+    store: 'Sklep rozszerzeń',
     online: 'Online',
     offline: 'Offline',
     commandPalette: 'Paleta Poleceń',
@@ -723,6 +731,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Upravjanje Širinoju Pasma',
     history: 'Historija i Zapisi',
     settings: 'Nastrojky',
+    store: 'Magazin Rasširenij',
     online: 'Na lěniji (V mreži)',
     offline: 'Odlěčen',
     commandPalette: 'Komandna Paleta',
@@ -806,6 +815,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Огранічєніє скорасті',
     history: 'Історія шо куда йшло',
     settings: 'Настройки програми',
+    store: 'Магазін прибамбасів',
     online: 'В сєті',
     offline: 'Нєма сєті',
     commandPalette: 'Бистрий поіск (Ctrl+K)',
@@ -889,6 +899,7 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     bandwidth: 'Спрямованя Смугы',
     history: 'Історія і Записы',
     settings: 'Наставлїня',
+    store: 'Крама Розшырїнь',
     online: 'На лінії (В мережи)',
     offline: 'Одкапчаный',
     commandPalette: 'Командный Палет',

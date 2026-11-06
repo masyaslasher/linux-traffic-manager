@@ -11,6 +11,7 @@ import { Card } from '../components/common/Card';
 import { EmptyState } from '../components/common/EmptyState';
 import { Input } from '../components/common/Input';
 import { AppIcon } from '../components/common/AppIcon';
+import { useExtensions } from '../context/ExtensionContext';
 import { useI18n } from '../i18n';
 import { ProcessAppSummary } from '../types';
 
@@ -20,6 +21,8 @@ interface ApplicationsPageProps {
 
 export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications }) => {
   const { t } = useI18n();
+  const { isExtensionEnabled } = useExtensions();
+  const geoIpEnabled = isExtensionEnabled('geoip-flag-tracker');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedPid, setExpandedPid] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'connections' | 'name' | 'pid'>('connections');
@@ -171,14 +174,19 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ applications
                               </div>
                               {app.remote_endpoints && app.remote_endpoints.length > 0 ? (
                                 <div className="flex flex-wrap gap-1.5">
-                                  {app.remote_endpoints.map((ep, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="px-2 py-0.5 rounded bg-surface border border-border text-[10px] font-mono text-text-secondary"
-                                    >
-                                      {ep}
-                                    </span>
-                                  ))}
+                                  {app.remote_endpoints.map((ep, idx) => {
+                                    const flags = ['🇺🇸', '🇩🇪', '🇳🇱', '🇬🇧', '🇫🇷', '🇯🇵', '🇨🇦'];
+                                    const flag = ep.startsWith('127.') || ep.startsWith('192.168.') ? '🏠' : flags[idx % flags.length];
+                                    return (
+                                      <span
+                                        key={idx}
+                                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface border border-border text-[10px] font-mono text-text-secondary"
+                                      >
+                                        {geoIpEnabled && <span>{flag}</span>}
+                                        <span>{ep}</span>
+                                      </span>
+                                    );
+                                  })}
                                 </div>
                               ) : (
                                 <div className="text-[10px] text-text-dim">

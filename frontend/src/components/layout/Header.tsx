@@ -10,6 +10,8 @@ import {
 import { SpeedMetrics, SpeedUnit } from '../../types';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { useI18n } from '../../i18n';
+import { useExtensions } from '../../context/ExtensionContext';
+import { Database } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
@@ -39,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAlerts,
 }) => {
   const { t } = useI18n();
+  const { isExtensionEnabled, quotaSettings } = useExtensions();
 
   const rxDisplay =
     speedUnit === 'bits'
@@ -67,6 +70,26 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-text-muted text-[11px]">{t.profile}:</span>
           <span className="font-semibold text-text-primary text-[11px]">{activeProfileName}</span>
         </div>
+
+        {/* Data Quota Sentinel Extension Badge */}
+        {isExtensionEnabled('data-quota-sentinel') && (
+          <div
+            title={`Cellular Data Quota: ${quotaSettings.usedGb} GB / ${quotaSettings.limitGb} GB`}
+            className="hidden xl:flex items-center gap-2 px-2.5 py-1 bg-surface-secondary border border-border rounded-md text-xs font-mono"
+          >
+            <Database className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[11px] text-text-muted">Quota:</span>
+            <span className="text-[11px] font-bold text-text-primary">
+              {quotaSettings.usedGb}/{quotaSettings.limitGb}G
+            </span>
+            <div className="w-12 h-1.5 rounded-full bg-surface overflow-hidden border border-border">
+              <div
+                className="h-full bg-primary"
+                style={{ width: `${Math.min(100, (quotaSettings.usedGb / quotaSettings.limitGb) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Live Bandwidth Pill */}
         {speedMetrics && (

@@ -8,7 +8,8 @@ export type NavigationTab =
   | 'bandwidth'
   | 'interfaces'
   | 'history'
-  | 'settings';
+  | 'settings'
+  | 'store';
 
 export type ThemeMode = 'dark' | 'amoled' | 'light' | 'graphite' | 'slate' | 'custom';
 export type InterfaceDensity = 'compact' | 'normal' | 'spacious';

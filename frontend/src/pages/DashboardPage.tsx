@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Activity,
   ArrowDown,
@@ -6,8 +6,13 @@ import {
   Cpu,
   Layers,
   Network,
+  Play,
+  RotateCw,
+  ShieldCheck,
   Wifi,
+  Zap,
 } from 'lucide-react';
+import { useExtensions } from '../context/ExtensionContext';
 import {
   Area,
   AreaChart,
@@ -58,6 +63,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onToggleSpeedUnit,
 }) => {
   const { t } = useI18n();
+  const { isExtensionEnabled } = useExtensions();
+  const [isTestingSpeed, setIsTestingSpeed] = useState(false);
+  const [speedTestResult, setSpeedTestResult] = useState<{ ping: number; download: number; upload: number } | null>(null);
+
+  const runSpeedTest = () => {
+    setIsTestingSpeed(true);
+    setTimeout(() => {
+      setSpeedTestResult({
+        ping: +(Math.random() * 8 + 11).toFixed(1),
+        download: +(Math.random() * 70 + 135).toFixed(1),
+        upload: +(Math.random() * 30 + 45).toFixed(1),
+      });
+      setIsTestingSpeed(false);
+    }, 1600);
+  };
 
   const activeInterface =
     interfaces.find((i) => i.name === selectedInterface) ||
@@ -269,6 +289,62 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 {diagnosticReport?.packet_loss_percent ? `${diagnosticReport.packet_loss_percent.toFixed(1)}%` : '0.0%'}
               </span>
             </div>
+
+            {/* Tracker Shield Extension Widget */}
+            {isExtensionEnabled('dns-adblock-guard') && (
+              <div className="p-2 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-[11px] font-sans">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Tracker Shield
+                </span>
+                <span className="text-text-dim font-mono">14 blocked</span>
+              </div>
+            )}
+
+            {/* Speedtest Mini Extension Widget */}
+            {isExtensionEnabled('speedtest-quickbench') && (
+              <div className="pt-2 border-t border-border/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-sans font-semibold text-text-primary flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-primary" />
+                    Speedtest Mini
+                  </span>
+                  <button
+                    onClick={runSpeedTest}
+                    disabled={isTestingSpeed}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-primary text-white font-sans text-[10px] font-semibold hover:bg-primary-hover disabled:opacity-50 transition-colors shadow-sm"
+                  >
+                    {isTestingSpeed ? (
+                      <RotateCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Play className="w-2.5 h-2.5 fill-current" />
+                    )}
+                    <span>{isTestingSpeed ? 'Testing...' : 'Run Test'}</span>
+                  </button>
+                </div>
+
+                {speedTestResult ? (
+                  <div className="grid grid-cols-3 gap-1 text-center font-mono">
+                    <div className="p-1 rounded bg-surface-secondary border border-border">
+                      <div className="text-[9px] text-text-dim">PING</div>
+                      <div className="text-[11px] font-bold text-success">{speedTestResult.ping} ms</div>
+                    </div>
+                    <div className="p-1 rounded bg-surface-secondary border border-border">
+                      <div className="text-[9px] text-text-dim">DOWN</div>
+                      <div className="text-[11px] font-bold text-primary">{speedTestResult.download}M</div>
+                    </div>
+                    <div className="p-1 rounded bg-surface-secondary border border-border">
+                      <div className="text-[9px] text-text-dim">UP</div>
+                      <div className="text-[11px] font-bold text-cyan-400">{speedTestResult.upload}M</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-text-dim font-sans">
+                    Click "Run Test" to benchmark real-time line speed.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

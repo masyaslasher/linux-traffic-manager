@@ -11,6 +11,7 @@ import { DiagnosticsPage } from './pages/DiagnosticsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { InterfacesPage } from './pages/InterfacesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { StorePage } from './pages/StorePage';
 import { api } from './services/tauriClient';
 import { useI18n } from './i18n';
 import {
@@ -375,6 +376,11 @@ export const App: React.FC = () => {
           title: t.settings,
           description: t.appearanceTitle,
         };
+      case 'store':
+        return {
+          title: t.store,
+          description: 'Каталог тем оформления, расширений и сетевых инструментов',
+        };
     }
   };
 
@@ -495,6 +501,7 @@ export const App: React.FC = () => {
             onSelectProfile={handleSelectProfile}
           />
         )}
+        {currentTab === 'store' && <StorePage />}
       </Layout>
 
       <CommandPalette
